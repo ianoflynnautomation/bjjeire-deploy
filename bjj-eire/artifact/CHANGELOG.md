@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.10](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/umbrella-v0.1.9...umbrella-v0.1.10) (2026-05-31)
+
+
+### ### Features
+
+* update chart version to 0.2.0 ([c041d99](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/c041d99247c5d592fa220c56377f5cc14ee22da4))
+
 ## [0.1.9](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/umbrella-v0.1.8...umbrella-v0.1.9) (2026-05-17)
 
 
