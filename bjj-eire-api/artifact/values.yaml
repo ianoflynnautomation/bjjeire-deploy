@@ -1,6 +1,6 @@
 nameOverride: "bjj-api"
 fullnameOverride: "bjj-api"
-namespace: bjj-app
+namespace: bjjeire-app
 
 api:
   enabled: true

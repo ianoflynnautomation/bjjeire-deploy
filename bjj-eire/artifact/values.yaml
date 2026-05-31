@@ -1,7 +1,7 @@
 bjj-mongodb:
   nameOverride: "bjj-mongodb"
   fullnameOverride: "bjj-mongodb"
-  namespace: bjj-app
+  namespace: bjjeire-app
 
   mongodb:
     enabled: true
@@ -105,7 +105,7 @@ bjj-mongodb:
 bjj-api:
   nameOverride: "bjj-api"
   fullnameOverride: "bjj-api"
-  namespace: bjj-app
+  namespace: bjjeire-app
 
   api:
     enabled: true
@@ -262,7 +262,7 @@ bjj-frontend:
 
   nameOverride: "bjj-frontend"
   fullnameOverride: "bjj-frontend"
-  namespace: bjj-app
+  namespace: bjjeire-app
 
   frontend:
     enabled: true
@@ -348,7 +348,7 @@ bjj-frontend:
       targetMemoryUtilizationPercentage: 80
     waitForApi:
       enabled: true
-      apiUrl: "http://bjj-api.bjj-app.svc.cluster.local:80/health"
+      apiUrl: "http://bjj-api.bjjeire-app.svc.cluster.local:80/health"
       image: curlimages/curl:8.19.0
 
   ingress:

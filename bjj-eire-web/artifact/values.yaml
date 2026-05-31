@@ -1,6 +1,6 @@
 nameOverride: "bjj-frontend"
 fullnameOverride: "bjj-frontend"
-namespace: bjj-app
+namespace: bjjeire-app
 
 frontend:
   enabled: true
@@ -105,7 +105,7 @@ frontend:
 
   waitForApi:
     enabled: true
-    apiUrl: "http://bjj-api.bjj-app.svc.cluster.local:80/health"
+    apiUrl: "http://bjj-api.bjjeire-app.svc.cluster.local:80/health"
     image: curlimages/curl:8.20.0
 
 ingress:

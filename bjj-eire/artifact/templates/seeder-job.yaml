@@ -12,8 +12,6 @@ metadata:
   annotations:
     "helm.sh/hook": {{ .Values.seeder.hookPolicy }}
     "helm.sh/hook-weight": "0"
-    # Delete previous job before creating a new one; delete on success.
-    # Failed jobs are kept so logs can be inspected with: kubectl logs job/<name>-seeder -n bjj-app
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   ttlSecondsAfterFinished: 300
