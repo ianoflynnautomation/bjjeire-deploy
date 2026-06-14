@@ -30,12 +30,21 @@ bjj-api:
       RateLimitOptions__RejectionStatusCode: "429"
       CacheOptions__DefaultExpirationMinutes: "5"
       ReadOnlyMode__Enabled: "true"
+      CompetitionDeactivation__Interval: "1.00:00:00"
+      CompetitionDeactivation__InitialDelay: "00:00:30"
+      FeatureManagement__BjjEvents: "true"
+      FeatureManagement__Gyms: "true"
+      FeatureManagement__Stores: "true"
+      FeatureManagement__Competitions: "true"
       ServiceDefaults__ServiceName: "BjjEire.Api"
       ServiceDefaults__EnablePrometheus: "false"
       AzureAd__Instance: "https://login.microsoftonline.com/"
-      AzureAd__TenantId: ""
-      AzureAd__ClientId: ""
-      AzureAd__Audience: ""
+      # Microsoft.Identity.Web still initializes for anonymous requests. Dummy
+      # identifiers keep local health checks working without real Azure access.
+      AzureAd__TenantId: "00000000-0000-0000-0000-000000000001"
+      AzureAd__ClientId: "00000000-0000-0000-0000-000000000002"
+      AzureAd__Audience: "api://00000000-0000-0000-0000-000000000002"
+      Donation__BitcoinAddress: ""
       Serilog__Properties__Application: "BjjWorld.Api"
       OTEL_EXPORTER_OTLP_ENDPOINT: ""
       OTEL_RESOURCE_ATTRIBUTES__service.name: "BjjWorld.Api"
@@ -66,6 +75,22 @@ bjj-frontend:
       repository: bjj-frontend
       tag: "local"
       pullPolicy: Never
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 101
+      fsGroup: 101
+      seccompProfile:
+        type: RuntimeDefault
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: false
+      runAsNonRoot: true
+      runAsUser: 101
+      capabilities:
+        drop:
+          - ALL
+        add:
+          - NET_BIND_SERVICE
     env:
       NODE_ENV: production
       PORT: "80"
@@ -94,4 +119,8 @@ bjj-frontend:
           - app.bjj.local
 
 seeder:
-  enabled: false
+  enabled: true
+  image:
+    repository: bjj-seeder
+    tag: "local"
+    pullPolicy: Never
