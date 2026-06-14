@@ -95,7 +95,7 @@ echo -n 'your-password' | base64
 helm dependency build bjj-eire/artifact
 
 helm upgrade --install bjj-eire bjj-eire/artifact \
-  --namespace bjj-app \
+  --namespace bjjeire-app \
   --create-namespace \
   -f bjj-eire/artifact/values.yaml \
   -f bjj-eire/artifact/values-dev.yaml \
@@ -131,7 +131,7 @@ docker build -t bjj-frontend:local .    # from bjjeire-web repo
 helm dependency build bjj-eire/artifact
 
 helm upgrade --install bjj-eire bjj-eire/artifact \
-  --namespace bjj-app \
+  --namespace bjjeire-app \
   --create-namespace \
   -f bjj-eire/artifact/values.yaml \
   -f bjj-eire/artifact/values-local.yaml \

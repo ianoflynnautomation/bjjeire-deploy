@@ -1,0 +1,61 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: bjj-api
+  namespace: bjjeire-app
+  labels:
+    app.kubernetes.io/part-of: bjj-eire
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: bjj-api
+      app.kubernetes.io/instance: bjj-eire
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      relabelings:
+        - sourceLabels:
+            - __meta_kubernetes_namespace
+          targetLabel: kubernetes_namespace
+        - sourceLabels:
+            - __meta_kubernetes_pod_name
+          targetLabel: kubernetes_pod_name
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: bjj-api
+  namespace: bjjeire-app
+  labels:
+    app.kubernetes.io/part-of: bjj-eire
+spec:
+  groups:
+    - name: bjj-api.availability
+      rules:
+        - alert: BjjApiTargetMissing
+          expr: absent(up{namespace="bjjeire-app", service="bjj-api"})
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: BJJ API Prometheus target is missing
+            description: Prometheus has not discovered the local BJJ API target.
+        - alert: BjjApiDown
+          expr: up{namespace="bjjeire-app", service="bjj-api"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: BJJ API is unavailable
+            description: Prometheus cannot scrape the local BJJ API metrics endpoint.
+        - alert: BjjApiRestarting
+          expr: increase(kube_pod_container_status_restarts_total{namespace="bjjeire-app", container="bjj-api"}[15m]) > 2
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: BJJ API is restarting repeatedly
+            description: The API container restarted more than twice in 15 minutes.
+

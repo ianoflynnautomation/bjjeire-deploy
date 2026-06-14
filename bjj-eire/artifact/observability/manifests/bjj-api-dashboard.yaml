@@ -1,0 +1,132 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bjj-api-dashboard
+  namespace: observability
+  labels:
+    grafana_dashboard: "1"
+data:
+  bjj-api.json: |-
+    {
+      "annotations": {"list": []},
+      "description": "BJJ Eire ASP.NET Core API availability, traffic, latency, errors, and runtime metrics.",
+      "editable": true,
+      "graphTooltip": 1,
+      "panels": [
+        {
+          "type": "stat",
+          "title": "API Up",
+          "id": 1,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [{"expr": "max(up{namespace=\"bjjeire-app\",job=\"bjj-api\"})", "refId": "A"}],
+          "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"0": {"text": "DOWN"}, "1": {"text": "UP"}}}], "thresholds": {"mode": "absolute", "steps": [{"color": "red"}, {"color": "green", "value": 1}]}}, "overrides": []},
+          "gridPos": {"h": 4, "w": 4, "x": 0, "y": 0}
+        },
+        {
+          "type": "stat",
+          "title": "Requests / Second",
+          "id": 2,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [{"expr": "sum(rate(http_request_duration_seconds_count{namespace=\"bjjeire-app\",job=\"bjj-api\"}[5m])) or vector(0)", "refId": "A"}],
+          "fieldConfig": {"defaults": {"unit": "reqps", "decimals": 2}, "overrides": []},
+          "gridPos": {"h": 4, "w": 5, "x": 4, "y": 0}
+        },
+        {
+          "type": "stat",
+          "title": "5xx Error Rate",
+          "id": 3,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [{"expr": "sum(rate(http_request_duration_seconds_count{namespace=\"bjjeire-app\",job=\"bjj-api\",code=~\"5..\"}[5m])) or vector(0)", "refId": "A"}],
+          "fieldConfig": {"defaults": {"unit": "reqps", "decimals": 2, "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 0.01}]}}, "overrides": []},
+          "gridPos": {"h": 4, "w": 5, "x": 9, "y": 0}
+        },
+        {
+          "type": "stat",
+          "title": "Process Memory",
+          "id": 4,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [{"expr": "max(process_working_set_bytes{namespace=\"bjjeire-app\",job=\"bjj-api\"})", "refId": "A"}],
+          "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []},
+          "gridPos": {"h": 4, "w": 5, "x": 14, "y": 0}
+        },
+        {
+          "type": "stat",
+          "title": "Pod Restarts (15m)",
+          "id": 5,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [{"expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"bjjeire-app\",container=\"bjj-api\"}[15m])) or vector(0)", "refId": "A"}],
+          "fieldConfig": {"defaults": {"decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}}, "overrides": []},
+          "gridPos": {"h": 4, "w": 5, "x": 19, "y": 0}
+        },
+        {
+          "type": "timeseries",
+          "title": "Request Rate by Route",
+          "id": 6,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [{"expr": "sum by (method, exported_endpoint) (rate(http_request_duration_seconds_count{namespace=\"bjjeire-app\",job=\"bjj-api\"}[5m]))", "legendFormat": "{{method}} {{exported_endpoint}}", "refId": "A"}],
+          "fieldConfig": {"defaults": {"unit": "reqps"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4}
+        },
+        {
+          "type": "timeseries",
+          "title": "Request Duration",
+          "id": 7,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {"expr": "histogram_quantile(0.50, sum by (le) (rate(http_request_duration_seconds_bucket{namespace=\"bjjeire-app\",job=\"bjj-api\"}[5m])))", "legendFormat": "p50", "refId": "A"},
+            {"expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{namespace=\"bjjeire-app\",job=\"bjj-api\"}[5m])))", "legendFormat": "p95", "refId": "B"},
+            {"expr": "histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket{namespace=\"bjjeire-app\",job=\"bjj-api\"}[5m])))", "legendFormat": "p99", "refId": "C"}
+          ],
+          "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4}
+        },
+        {
+          "type": "timeseries",
+          "title": "Responses by Status",
+          "id": 8,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [{"expr": "sum by (code) (rate(http_request_duration_seconds_count{namespace=\"bjjeire-app\",job=\"bjj-api\"}[5m]))", "legendFormat": "HTTP {{code}}", "refId": "A"}],
+          "fieldConfig": {"defaults": {"unit": "reqps"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12}
+        },
+        {
+          "type": "timeseries",
+          "title": ".NET Runtime",
+          "id": 9,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {"expr": "max(dotnet_total_memory_bytes{namespace=\"bjjeire-app\",job=\"bjj-api\"})", "legendFormat": "managed memory", "refId": "A"},
+            {"expr": "sum(rate(dotnet_collection_count_total{namespace=\"bjjeire-app\",job=\"bjj-api\"}[5m]))", "legendFormat": "GC collections/s", "refId": "B"}
+          ],
+          "fieldConfig": {"defaults": {}, "overrides": [{"matcher": {"id": "byName", "options": "managed memory"}, "properties": [{"id": "unit", "value": "bytes"}]}]},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12}
+        },
+        {
+          "type": "timeseries",
+          "title": "Process CPU",
+          "id": 10,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [{"expr": "sum(rate(process_cpu_seconds_total{namespace=\"bjjeire-app\",job=\"bjj-api\"}[5m]))", "legendFormat": "CPU cores", "refId": "A"}],
+          "fieldConfig": {"defaults": {"unit": "cores"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 20}
+        },
+        {
+          "type": "timeseries",
+          "title": "Active Requests",
+          "id": 11,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [{"expr": "sum(http_requests_in_progress{namespace=\"bjjeire-app\",job=\"bjj-api\"}) or vector(0)", "legendFormat": "active", "refId": "A"}],
+          "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 20}
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 41,
+      "tags": ["bjj-eire", "application"],
+      "templating": {"list": []},
+      "time": {"from": "now-1h", "to": "now"},
+      "timezone": "browser",
+      "title": "BJJ Eire API",
+      "uid": "bjjeire-api-v1",
+      "version": 2
+    }

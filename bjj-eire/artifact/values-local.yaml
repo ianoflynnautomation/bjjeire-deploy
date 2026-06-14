@@ -10,6 +10,8 @@ bjj-mongodb:
     persistence:
       storageClassName: standard
       size: 2Gi
+    metrics:
+      enabled: true
 
 bjj-api:
   api:
@@ -37,7 +39,7 @@ bjj-api:
       FeatureManagement__Stores: "true"
       FeatureManagement__Competitions: "true"
       ServiceDefaults__ServiceName: "BjjEire.Api"
-      ServiceDefaults__EnablePrometheus: "false"
+      ServiceDefaults__EnablePrometheus: "true"
       AzureAd__Instance: "https://login.microsoftonline.com/"
       # Microsoft.Identity.Web still initializes for anonymous requests. Dummy
       # identifiers keep local health checks working without real Azure access.

@@ -1,0 +1,104 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: bjj-mongodb
+  namespace: bjjeire-app
+  labels:
+    app.kubernetes.io/part-of: bjj-eire
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: bjj-mongodb
+      app.kubernetes.io/instance: bjj-eire
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 15s
+      relabelings:
+        - sourceLabels:
+            - __meta_kubernetes_namespace
+          targetLabel: namespace
+        - sourceLabels:
+            - __meta_kubernetes_pod_name
+          targetLabel: pod
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: bjj-mongodb
+  namespace: bjjeire-app
+  labels:
+    app.kubernetes.io/part-of: bjj-eire
+spec:
+  groups:
+    - name: bjj-mongodb.availability
+      rules:
+        - alert: BjjMongoDBExporterMissing
+          expr: absent(mongodb_up{namespace="bjjeire-app", job="bjj-mongodb"})
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: BJJ MongoDB exporter target is missing
+            description: Prometheus has not discovered the MongoDB exporter target.
+        - alert: BjjMongoDBDown
+          expr: mongodb_up{namespace="bjjeire-app", job="bjj-mongodb"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: BJJ MongoDB is unavailable
+            description: The MongoDB exporter cannot connect to MongoDB.
+        - alert: BjjMongoDBRestarting
+          expr: increase(kube_pod_container_status_restarts_total{namespace="bjjeire-app", container=~"mongodb|mongodb-exporter"}[15m]) > 2
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: BJJ MongoDB is restarting repeatedly
+            description: A MongoDB pod container restarted more than twice in 15 minutes.
+    - name: bjj-mongodb.capacity
+      rules:
+        - alert: BjjMongoDBConnectionsHigh
+          expr: |
+            mongodb_ss_connections{namespace="bjjeire-app", job="bjj-mongodb", conn_type="current"}
+            /
+            (
+              mongodb_ss_connections{namespace="bjjeire-app", job="bjj-mongodb", conn_type="current"}
+              +
+              mongodb_ss_connections{namespace="bjjeire-app", job="bjj-mongodb", conn_type="available"}
+            ) > 0.8
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: BJJ MongoDB connections are above 80%
+            description: MongoDB is approaching its configured connection limit.
+        - alert: BjjMongoDBConnectionsRejected
+          expr: increase(mongodb_ss_connections{namespace="bjjeire-app", job="bjj-mongodb", conn_type="rejected"}[5m]) > 0
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: BJJ MongoDB rejected connections
+            description: MongoDB rejected one or more connections in the last five minutes.
+        - alert: BjjMongoDBQueueBacklog
+          expr: mongodb_ss_globalLock_currentQueue{namespace="bjjeire-app", job="bjj-mongodb", count_type="total"} > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: BJJ MongoDB has queued operations
+            description: MongoDB operations have remained queued for five minutes.
+        - alert: BjjMongoDBWiredTigerCacheHigh
+          expr: |
+            mongodb_mongod_wiredtiger_cache_bytes{namespace="bjjeire-app", job="bjj-mongodb", type="total"}
+            /
+            mongodb_mongod_wiredtiger_cache_max_bytes{namespace="bjjeire-app", job="bjj-mongodb"} > 0.8
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: BJJ MongoDB WiredTiger cache is above 80%
+            description: WiredTiger cache usage has remained above 80% for ten minutes.

@@ -84,6 +84,53 @@ spec:
               mountPath: /mnt/secrets-store
               readOnly: true
             {{- end }}
+        {{- if .Values.mongodb.metrics.enabled }}
+        - name: mongodb-exporter
+          image: "{{ .Values.mongodb.metrics.image.repository }}:{{ .Values.mongodb.metrics.image.tag }}"
+          imagePullPolicy: {{ .Values.mongodb.metrics.image.pullPolicy }}
+          args:
+            - --mongodb.uri=mongodb://127.0.0.1:{{ .Values.mongodb.service.port }}/admin
+            {{- if .Values.mongodb.metrics.collectAll }}
+            - --collect-all
+            {{- end }}
+            {{- if .Values.mongodb.metrics.compatibleMode }}
+            - --compatible-mode
+            {{- end }}
+          env:
+            - name: MONGODB_USER
+              value: {{ .Values.mongodb.config.user | quote }}
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.mongodbRootPassword.name }}
+                  key: {{ .Values.secrets.mongodbRootPassword.key }}
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.mongodb.metrics.port }}
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: metrics
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: metrics
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1001
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            {{- toYaml .Values.mongodb.metrics.resources | nindent 12 }}
+        {{- end }}
       {{- if .Values.azure.enabled }}
       volumes:
         - name: secrets-store-vol

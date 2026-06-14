@@ -1,0 +1,23 @@
+fullnameOverride: tempo
+
+tempo:
+  reportingEnabled: false
+  retention: 24h
+  memBallastSizeMbs: 0
+  resources:
+    requests:
+      cpu: 100m
+      memory: 192Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  metricsGenerator:
+    enabled: false
+
+persistence:
+  enabled: false
+
+serviceMonitor:
+  enabled: true
+  interval: 30s
+

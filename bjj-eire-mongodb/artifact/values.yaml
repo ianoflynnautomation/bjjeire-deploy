@@ -41,6 +41,23 @@ mongodb:
     type: ClusterIP
     port: 27017
 
+  metrics:
+    enabled: false
+    image:
+      repository: percona/mongodb_exporter
+      tag: "0.51.0"
+      pullPolicy: IfNotPresent
+    port: 9216
+    compatibleMode: true
+    collectAll: true
+    resources:
+      limits:
+        cpu: 200m
+        memory: 128Mi
+      requests:
+        cpu: 25m
+        memory: 32Mi
+
   config:
     user: admin
     database: Mongodb

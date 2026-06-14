@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bjj-mongodb-dashboard
+  namespace: observability
+  labels:
+    grafana_dashboard: "1"
+data:
+  bjj-mongodb.json: |-
+    {
+      "annotations": {"list": []},
+      "description": "BJJ Eire MongoDB availability, connections, operations, memory, cache, network, and storage.",
+      "editable": true,
+      "graphTooltip": 1,
+      "panels": [
+        {
+          "type": "stat", "title": "MongoDB Up", "id": 1,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [{"expr": "max(mongodb_up{namespace=\"bjjeire-app\",job=\"bjj-mongodb\"})", "refId": "A"}],
+          "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"0": {"text": "DOWN"}, "1": {"text": "UP"}}}], "thresholds": {"mode": "absolute", "steps": [{"color": "red"}, {"color": "green", "value": 1}]}}, "overrides": []},
+          "gridPos": {"h": 4, "w": 4, "x": 0, "y": 0}
+        },
+        {
+          "type": "stat", "title": "Current Connections", "id": 2,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [{"expr": "max(mongodb_ss_connections{namespace=\"bjjeire-app\",job=\"bjj-mongodb\",conn_type=\"current\"})", "refId": "A"}],
+          "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+          "gridPos": {"h": 4, "w": 5, "x": 4, "y": 0}
+        },
+        {
+          "type": "stat", "title": "Resident Memory", "id": 3,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [{"expr": "max(mongodb_ss_mem_resident{namespace=\"bjjeire-app\",job=\"bjj-mongodb\"}) * 1024 * 1024", "refId": "A"}],
+          "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []},
+          "gridPos": {"h": 4, "w": 5, "x": 9, "y": 0}
+        },
+        {
+          "type": "stat", "title": "WiredTiger Cache", "id": 4,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [{"expr": "max(mongodb_mongod_wiredtiger_cache_bytes{namespace=\"bjjeire-app\",job=\"bjj-mongodb\",type=\"total\"}) / max(mongodb_mongod_wiredtiger_cache_max_bytes{namespace=\"bjjeire-app\",job=\"bjj-mongodb\"})", "refId": "A"}],
+          "fieldConfig": {"defaults": {"unit": "percentunit", "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "yellow", "value": 0.7}, {"color": "red", "value": 0.85}]}}, "overrides": []},
+          "gridPos": {"h": 4, "w": 5, "x": 14, "y": 0}
+        },
+        {
+          "type": "stat", "title": "Database Storage", "id": 5,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [{"expr": "sum(mongodb_collstats_storageStats_totalSize{namespace=\"bjjeire-app\",job=\"bjj-mongodb\",database=\"Mongodb\"})", "refId": "A"}],
+          "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []},
+          "gridPos": {"h": 4, "w": 5, "x": 19, "y": 0}
+        },
+        {
+          "type": "timeseries", "title": "Operations / Second", "id": 6,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [{"expr": "sum by (legacy_op_type) (rate(mongodb_ss_opcounters{namespace=\"bjjeire-app\",job=\"bjj-mongodb\"}[5m]))", "legendFormat": "{{legacy_op_type}}", "refId": "A"}],
+          "fieldConfig": {"defaults": {"unit": "ops"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4}
+        },
+        {
+          "type": "timeseries", "title": "Connections", "id": 7,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [{"expr": "mongodb_ss_connections{namespace=\"bjjeire-app\",job=\"bjj-mongodb\",conn_type=~\"current|active|available|rejected\"}", "legendFormat": "{{conn_type}}", "refId": "A"}],
+          "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4}
+        },
+        {
+          "type": "timeseries", "title": "Network Throughput", "id": 8,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {"expr": "rate(mongodb_ss_network_bytesIn{namespace=\"bjjeire-app\",job=\"bjj-mongodb\"}[5m])", "legendFormat": "in", "refId": "A"},
+            {"expr": "rate(mongodb_ss_network_bytesOut{namespace=\"bjjeire-app\",job=\"bjj-mongodb\"}[5m])", "legendFormat": "out", "refId": "B"}
+          ],
+          "fieldConfig": {"defaults": {"unit": "Bps"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12}
+        },
+        {
+          "type": "timeseries", "title": "Queued Operations", "id": 9,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [{"expr": "mongodb_ss_globalLock_currentQueue{namespace=\"bjjeire-app\",job=\"bjj-mongodb\"}", "legendFormat": "{{count_type}}", "refId": "A"}],
+          "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12}
+        },
+        {
+          "type": "timeseries", "title": "Documents by Collection", "id": 10,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [{"expr": "mongodb_collstats_storageStats_count{namespace=\"bjjeire-app\",job=\"bjj-mongodb\",database=\"Mongodb\"}", "legendFormat": "{{collection}}", "refId": "A"}],
+          "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 20}
+        },
+        {
+          "type": "timeseries", "title": "Collection Storage", "id": 11,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [{"expr": "mongodb_collstats_storageStats_storageSize{namespace=\"bjjeire-app\",job=\"bjj-mongodb\",database=\"Mongodb\"}", "legendFormat": "{{collection}}", "refId": "A"}],
+          "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 20}
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 41,
+      "tags": ["bjj-eire", "mongodb"],
+      "templating": {"list": []},
+      "time": {"from": "now-1h", "to": "now"},
+      "timezone": "browser",
+      "title": "BJJ Eire MongoDB",
+      "uid": "bjjeire-mongodb-v1",
+      "version": 1
+    }
