@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.11](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/umbrella-v0.1.10...umbrella-v0.1.11) (2026-06-14)
+
+
+### ### Features
+
+* add local observability ([ae1aaaa](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/ae1aaaabb70cd7c8aa6a4a97f620a3f7dd279694))
+
 ## [0.1.10](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/umbrella-v0.1.9...umbrella-v0.1.10) (2026-05-31)
 
 
