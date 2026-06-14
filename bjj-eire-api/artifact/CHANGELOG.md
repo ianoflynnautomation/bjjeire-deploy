@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/api-v0.1.4...api-v0.1.5) (2026-05-31)
+
+
+### ### Features
+
+* update chart version to 0.2.0 ([c041d99](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/c041d99247c5d592fa220c56377f5cc14ee22da4))
+
 ## [0.1.4](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/api-v0.1.3...api-v0.1.4) (2026-04-12)
 
 

@@ -2,7 +2,7 @@ apiVersion: v2
 name: bjj-frontend
 description: A Helm chart for BJJ Application Frontend - Nginx-based web application
 type: application
-version: 0.1.4
+version: 0.1.5
 appVersion: "1.0.0"
 keywords:
   - frontend

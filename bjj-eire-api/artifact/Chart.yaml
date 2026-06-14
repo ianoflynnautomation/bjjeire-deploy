@@ -2,7 +2,7 @@ apiVersion: v2
 name: bjj-api
 description: A Helm chart for BJJ Application API - ASP.NET Core Web API
 type: application
-version: 0.1.4
+version: 0.1.5
 appVersion: "1.0.0"
 keywords:
   - api
