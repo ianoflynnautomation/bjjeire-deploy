@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/mongodb-v0.1.2...mongodb-v0.1.3) (2026-06-14)
+
+
+### ### Features
+
+* add local observability ([ae1aaaa](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/ae1aaaabb70cd7c8aa6a4a97f620a3f7dd279694))
+
 ## [0.1.2](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/mongodb-v0.1.1...mongodb-v0.1.2) (2026-05-31)
 
 
