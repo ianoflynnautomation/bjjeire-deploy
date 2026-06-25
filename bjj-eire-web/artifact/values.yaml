@@ -106,7 +106,7 @@ frontend:
   waitForApi:
     enabled: true
     apiUrl: "http://bjj-api.bjjeire-app.svc.cluster.local:80/health"
-    image: curlimages/curl:8.20.0
+    image: curlimages/curl:8.21.0
 
 ingress:
   enabled: true
