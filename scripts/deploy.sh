@@ -14,7 +14,7 @@
 #
 # Options:
 #   --env <local|dev|prod>    Target environment (default: local)
-#   --namespace <n>           Kubernetes namespace (default: bjj-app)
+#   --namespace <n>           Kubernetes namespace (default: bjjeire-app)
 #   --skip-mongodb            Skip MongoDB deployment
 #   --skip-api                Skip API deployment
 #   --skip-frontend           Skip Frontend deployment
@@ -45,7 +45,7 @@ readonly API_CONFIG_DIR="${CHARTS_ROOT_DIR}/bjj-eire-api/config-artifact/config"
 
 # Default values
 ENVIRONMENT="local"
-NAMESPACE="bjj-app"
+NAMESPACE="bjjeire-app"
 SKIP_MONGODB=false
 SKIP_API=false
 SKIP_FRONTEND=false
@@ -115,7 +115,7 @@ Deploy BJJ Application Helm charts to Kubernetes
 
 Options:
   --env <local|dev|prod>    Target environment (default: local)
-  --namespace <n>           Kubernetes namespace (default: bjj-app)
+  --namespace <n>           Kubernetes namespace (default: bjjeire-app)
   --skip-mongodb            Skip MongoDB deployment
   --skip-api                Skip API deployment
   --skip-frontend           Skip Frontend deployment

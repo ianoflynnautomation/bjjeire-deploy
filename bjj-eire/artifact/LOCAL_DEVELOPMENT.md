@@ -238,20 +238,56 @@ minikube tunnel
 
 ## 7. Redeploy Local Changes
 
-Rebuild and reload a changed image:
+> **Important:** `minikube image load <name> --overwrite` is **not reliable** for
+> overwriting an existing tag. Docker Buildx emits an OCI *manifest list* with an
+> attestation manifest by default, and Minikube's loader will not replace an
+> existing single-arch image in the node's containerd store with that format. The
+> load reports success, the tag keeps pointing at the **old** image, and the pod
+> silently runs stale code after `rollout restart`. Use the procedure below.
+
+Build a single-architecture image (no attestation/manifest list), force-evict the
+stale image from the node's containerd store, then load the new one from a tar:
 
 ```bash
 docker build \
+  --provenance=false \
+  --output type=docker \
   --file "$APP_REPO/src/BjjEire.Api/Dockerfile" \
   --tag bjj-api:local \
   "$APP_REPO"
-minikube image load bjj-api:local --overwrite
+
+# minikube image rm does not always evict from containerd — remove it directly:
+minikube ssh -- "sudo crictl rmi docker.io/library/bjj-api:local" 2>/dev/null || true
+
+docker save -o /tmp/bjj-api-local.tar bjj-api:local
+minikube image load /tmp/bjj-api-local.tar
+
 kubectl rollout restart deployment/bjj-api --namespace bjjeire-app
 kubectl rollout status deployment/bjj-api --namespace bjjeire-app
 ```
 
+Verify the running pod picked up new code by behaviour, not by image id — with
+`imagePullPolicy: Never` and an unchanged tag, the kubelet may still report the
+old `imageID` even when the new content is running. Check a log line or response
+you changed instead:
+
+```bash
+kubectl logs --namespace bjjeire-app deployment/bjj-api --tail=200
+```
+
 Use the same process with `bjj-frontend:local` and
 `deployment/bjj-frontend` for frontend changes.
+
+### Cleaner alternative: build directly in the cluster
+
+`minikube image build` builds straight into the node's container runtime, so
+there is no separate load step and no manifest-list pitfall. It does not use the
+local Docker layer cache, so each build is a full rebuild:
+
+```bash
+minikube image build -t bjj-api:local -f "$APP_REPO/src/BjjEire.Api/Dockerfile" "$APP_REPO"
+kubectl rollout restart deployment/bjj-api --namespace bjjeire-app
+```
 
 After changing chart templates or values, rerun:
 
@@ -269,16 +305,22 @@ helm upgrade --install bjj-eire . \
 Local values enable the `bjj-seeder:local` Helm hook. It runs after each
 install or upgrade and upserts the JSON data bundled with the seeder image.
 
-After changing seed data, rebuild and reload the image:
+After changing seed data, rebuild and reload the image using the **reliable
+reload procedure from section 7** (the `--provenance=false` build plus
+`crictl rmi` and tar load). The plain `minikube image load` shown previously has
+the same manifest-list pitfall described there.
 
 ```bash
 docker build \
+  --provenance=false \
+  --output type=docker \
   --file "$APP_REPO/src/BjjEire.Seeder/Dockerfile" \
   --tag bjj-seeder:local \
   "$APP_REPO"
 
-minikube image rm bjj-seeder:local 2>/dev/null || true
-minikube image load bjj-seeder:local
+minikube ssh -- "sudo crictl rmi docker.io/library/bjj-seeder:local" 2>/dev/null || true
+docker save -o /tmp/bjj-seeder-local.tar bjj-seeder:local
+minikube image load /tmp/bjj-seeder-local.tar
 ```
 
 Run the seeder again:
@@ -330,6 +372,10 @@ Common failures:
 - API template failure: confirm `bjj-mongodb-root-password` exists.
 - Pending MongoDB pod: inspect the PVC and the `standard` storage class.
 - Ingress returns 404: verify the ingress controller and `/etc/hosts`.
+- Pod runs stale code after a redeploy: `minikube image load --overwrite` did not
+  replace the tag (Buildx manifest-list issue). Confirm with
+  `minikube ssh -- "sudo crictl images | grep bjj-"` and use the section 7 reload
+  procedure.
 
 ## 10. Local Observability
 
