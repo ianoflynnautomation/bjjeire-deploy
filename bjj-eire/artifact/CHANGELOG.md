@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.12](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/umbrella-v0.1.11...umbrella-v0.1.12) (2026-07-01)
+
+
+### ### Features
+
+* add mongo db settings ([45c44e7](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/45c44e7318ba74747353e1922cd3b8164a1565bd))
+
 ## [0.1.11](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/umbrella-v0.1.10...umbrella-v0.1.11) (2026-06-14)
 
 
