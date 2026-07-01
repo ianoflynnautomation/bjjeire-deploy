@@ -14,14 +14,14 @@ jobs:
     name: Release Please
     runs-on: ubuntu-latest
     outputs:
-      api_released:      ${{ steps.release.outputs['bjj-eire-api--release_created'] }}
-      api_tag:           ${{ steps.release.outputs['bjj-eire-api--tag_name'] }}
-      mongodb_released:  ${{ steps.release.outputs['bjj-eire-mongodb--release_created'] }}
-      mongodb_tag:       ${{ steps.release.outputs['bjj-eire-mongodb--tag_name'] }}
-      web_released:      ${{ steps.release.outputs['bjj-eire-web--release_created'] }}
-      web_tag:           ${{ steps.release.outputs['bjj-eire-web--tag_name'] }}
-      umbrella_released: ${{ steps.release.outputs['bjj-eire--release_created'] }}
-      umbrella_tag:      ${{ steps.release.outputs['bjj-eire--tag_name'] }}
+      umbrella_released: ${{ steps.release.outputs['bjj-eire/artifact--release_created'] }}
+      umbrella_tag:      ${{ steps.release.outputs['bjj-eire/artifact--tag_name'] }}
+      api_released:      ${{ steps.release.outputs['bjj-eire-api/artifact--release_created'] }}
+      api_tag:           ${{ steps.release.outputs['bjj-eire-api/artifact--tag_name'] }}
+      mongodb_released:  ${{ steps.release.outputs['bjj-eire-mongodb/artifact--release_created'] }}
+      mongodb_tag:       ${{ steps.release.outputs['bjj-eire-mongodb/artifact--tag_name'] }}
+      web_released:      ${{ steps.release.outputs['bjj-eire-web/artifact--release_created'] }}
+      web_tag:           ${{ steps.release.outputs['bjj-eire-web/artifact--tag_name'] }}
     steps:
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7  # v5.0.0
         id: release
