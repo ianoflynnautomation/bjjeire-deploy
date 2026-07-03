@@ -46,6 +46,8 @@ spec:
           env:
             - name: ASPNETCORE_ENVIRONMENT
               value: Production
+            - name: SEED_DATASET
+              value: {{ .Values.seeder.dataset | default "production" | quote }}
             # Injected first so it can be referenced via $(MONGO_PASSWORD) below
             - name: MONGO_PASSWORD
               valueFrom:

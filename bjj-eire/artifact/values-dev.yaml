@@ -79,6 +79,7 @@ bjj-frontend:
         hosts:
           - dev.bjjeire.ie
 seeder:
+  dataset: "test"
   image:
     repository: ghcr.io/ianoflynnautomation/bjjeire-seeder
     pullPolicy: Always

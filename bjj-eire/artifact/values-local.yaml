@@ -122,6 +122,7 @@ bjj-frontend:
 
 seeder:
   enabled: true
+  dataset: "test"
   image:
     repository: bjj-seeder
     tag: "local"

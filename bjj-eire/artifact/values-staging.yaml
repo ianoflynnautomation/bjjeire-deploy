@@ -25,10 +25,10 @@ bjj-api:
       prometheus.io/path: "/metrics"
       prometheus.io/port: "80"
     env:
-      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_ENVIRONMENT: Staging
       ASPNETCORE_URLS: "http://+:80"
       ASPNETCORE_HTTP_PORT: "80"
-      CorsOptions__AllowedOrigins: "https://bjjeire.com,https://www.bjjeire.com"
+      CorsOptions__AllowedOrigins: "https://staging.bjjeire.ie,https://www.staging.bjjeire.ie"
       CorsOptions__AllowedMethods: "GET,POST,PUT,DELETE"
       CorsOptions__AllowedHeaders: "Authorization,Content-Type"
       RateLimitOptions__EnableRateLimiting: "true"
@@ -55,7 +55,7 @@ bjj-api:
       Serilog__Properties__Application: "BjjWorld.Api"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"
       OTEL_RESOURCE_ATTRIBUTES__service.name: "BjjWorld.Api"
-      OTEL_RESOURCE_ATTRIBUTES__deployment.environment: "Production"
+      OTEL_RESOURCE_ATTRIBUTES__deployment.environment: "Staging"
     resources:
       limits:
         cpu: 1000m
@@ -75,14 +75,14 @@ bjj-api:
       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
     hosts:
-      - host: api.bjjeire.com
+      - host: api.staging.bjjeire.ie
         paths:
           - path: /
             pathType: Prefix
     tls:
-      - secretName: bjj-prod-api-tls
+      - secretName: bjj-staging-api-tls
         hosts:
-          - api.bjjeire.com
+          - api.staging.bjjeire.ie
   azure:
     enabled: true
     workloadIdentity:
@@ -124,21 +124,21 @@ bjj-frontend:
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
     hosts:
-      - host: bjjeire.com
+      - host: staging.bjjeire.ie
         paths:
           - path: /
             pathType: Prefix
-      - host: www.bjjeire.com
+      - host: www.staging.bjjeire.ie
         paths:
           - path: /
             pathType: Prefix
     tls:
-      - secretName: bjj-prod-frontend-tls
+      - secretName: bjj-staging-frontend-tls
         hosts:
-          - bjjeire.com
-          - www.bjjeire.com
+          - staging.bjjeire.ie
+          - www.staging.bjjeire.ie
 seeder:
-  dataset: "production"
+  dataset: "test"
   image:
     repository: ghcr.io/ianoflynnautomation/bjjeire-seeder
     pullPolicy: IfNotPresent

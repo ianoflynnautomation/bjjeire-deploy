@@ -385,6 +385,7 @@ bjj-frontend:
 
 seeder:
   enabled: true
+  dataset: "production"
   image:
     repository: ghcr.io/ianoflynnautomation/bjjeire-seeder
     pullPolicy: IfNotPresent
