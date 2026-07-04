@@ -52,9 +52,9 @@ bjj-api:
       ServiceDefaults__EnablePrometheus: "true"
       AzureAd__Instance: "https://login.microsoftonline.com/"
       Donation__BitcoinAddress: ""
-      Serilog__Properties__Application: "BjjWorld.Api"
+      Serilog__Properties__Application: "BjjEire.Api"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"
-      OTEL_RESOURCE_ATTRIBUTES__service.name: "BjjWorld.Api"
+      OTEL_RESOURCE_ATTRIBUTES__service.name: "BjjEire.Api"
       OTEL_RESOURCE_ATTRIBUTES__deployment.environment: "Production"
     resources:
       limits:

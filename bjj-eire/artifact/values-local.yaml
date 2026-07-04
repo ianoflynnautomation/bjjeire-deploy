@@ -47,9 +47,9 @@ bjj-api:
       AzureAd__ClientId: "00000000-0000-0000-0000-000000000002"
       AzureAd__Audience: "api://00000000-0000-0000-0000-000000000002"
       Donation__BitcoinAddress: ""
-      Serilog__Properties__Application: "BjjWorld.Api"
+      Serilog__Properties__Application: "BjjEire.Api"
       OTEL_EXPORTER_OTLP_ENDPOINT: ""
-      OTEL_RESOURCE_ATTRIBUTES__service.name: "BjjWorld.Api"
+      OTEL_RESOURCE_ATTRIBUTES__service.name: "BjjEire.Api"
       OTEL_RESOURCE_ATTRIBUTES__deployment.environment: "Development"
 
     resources:

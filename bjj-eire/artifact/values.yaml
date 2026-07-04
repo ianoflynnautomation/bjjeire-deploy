@@ -169,9 +169,9 @@ bjj-api:
       AzureAd__TenantId: ""
       AzureAd__ClientId: ""
       AzureAd__Audience: ""
-      Serilog__Properties__Application: "BjjWorld.Api"
+      Serilog__Properties__Application: "BjjEire.Api"
       OTEL_EXPORTER_OTLP_ENDPOINT: ""
-      OTEL_RESOURCE_ATTRIBUTES__service.name: "BjjWorld.Api"
+      OTEL_RESOURCE_ATTRIBUTES__service.name: "BjjEire.Api"
       OTEL_RESOURCE_ATTRIBUTES__deployment.environment: "Production"
 
     resources:
