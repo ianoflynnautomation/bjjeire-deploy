@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.13](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/umbrella-v0.1.12...umbrella-v0.1.13) (2026-07-04)
+
+
+### ### Features
+
+* add seeder dataset flag ([757157e](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/757157e7321510344980ce813572cb640d6a3659))
+
 ## [0.1.12](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/umbrella-v0.1.11...umbrella-v0.1.12) (2026-07-01)
 
 
