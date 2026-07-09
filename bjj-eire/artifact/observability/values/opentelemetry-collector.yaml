@@ -12,6 +12,16 @@ presets:
     enabled: true
 
 config:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+    filelog:
+      exclude:
+        - /var/log/pods/bjjeire-app_bjj-api*/*/*.log
   exporters:
     otlp/tempo:
       endpoint: tempo.observability.svc.cluster.local:4317

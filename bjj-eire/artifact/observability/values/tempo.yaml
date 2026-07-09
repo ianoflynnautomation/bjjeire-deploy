@@ -10,9 +10,22 @@ tempo:
       memory: 192Mi
     limits:
       cpu: 500m
-      memory: 512Mi
+      memory: 640Mi
   metricsGenerator:
-    enabled: false
+    enabled: true
+    remoteWriteUrl: "http://monitoring-kube-prometheus-prometheus.observability.svc.cluster.local:9090/api/v1/write"
+    processor:
+      local_blocks:
+        filter_server_spans: false
+        flush_to_storage: true
+  overrides:
+    defaults:
+      metrics_generator:
+        processors:
+          - local-blocks
+  queryFrontend:
+    metrics:
+      max_duration: 24h
 
 persistence:
   enabled: false
@@ -21,3 +34,57 @@ serviceMonitor:
   enabled: true
   interval: 30s
 
+# Copy of the chart's config template (tempo chart 1.24.4) with ONE addition:
+# metrics_ingestion_time_range_slack. Playwright reporter spans arrive via a
+# kubectl port-forward; when an OTLP POST hiccups, the exporter's retry can
+# land >30s after span end and the default 30s slack silently drops those
+# spans from TraceQL metrics (traces are unaffected — confirmed empirically:
+# tempo_metrics_generator_spans_discarded_total{reason="outside_metrics_
+# ingestion_slack"}). Review this block when bumping the chart version.
+config: |
+    memberlist:
+      cluster_label: "{{ .Release.Name }}.{{ .Release.Namespace }}"
+    multitenancy_enabled: {{ .Values.tempo.multitenancyEnabled }}
+    usage_report:
+      reporting_enabled: {{ .Values.tempo.reportingEnabled }}
+    compactor:
+      compaction:
+        block_retention: {{ .Values.tempo.retention }}
+    distributor:
+      receivers:
+        {{- toYaml .Values.tempo.receivers | nindent 8 }}
+    ingester:
+      {{- toYaml .Values.tempo.ingester | nindent 6 }}
+    server:
+      {{- toYaml .Values.tempo.server | nindent 6 }}
+    storage:
+      {{- toYaml .Values.tempo.storage | nindent 6 }}
+    querier:
+      {{- toYaml .Values.tempo.querier | nindent 6 }}
+    query_frontend:
+      {{- toYaml .Values.tempo.queryFrontend | nindent 6 }}
+    overrides:
+      {{- toYaml .Values.tempo.overrides | nindent 6 }}
+    {{- if .Values.tempo.metricsGenerator.enabled }}
+    metrics_generator:
+      metrics_ingestion_time_range_slack: 5m
+      {{- if .Values.tempo.metricsGenerator.processor }}
+      processor:
+        {{- toYaml .Values.tempo.metricsGenerator.processor | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tempo.metricsGenerator.registry }}
+      registry:
+        {{- toYaml .Values.tempo.metricsGenerator.registry | nindent 8 }}
+      {{- end }}
+      storage:
+        path: {{ .Values.tempo.metricsGenerator.storage.path | quote }}
+        {{- if .Values.tempo.metricsGenerator.storage.remote_write }}
+        remote_write:
+          {{- toYaml .Values.tempo.metricsGenerator.storage.remote_write | nindent 10 }}
+        {{- else }}
+        remote_write:
+          - url: {{ .Values.tempo.metricsGenerator.remoteWriteUrl }}
+        {{- end }}
+      traces_storage:
+        path: {{ .Values.tempo.metricsGenerator.traces_storage.path | quote }}
+    {{- end }}
