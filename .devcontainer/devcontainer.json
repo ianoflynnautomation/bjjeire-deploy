@@ -1,0 +1,133 @@
+{
+  "name": "bjj-eire-helm-aks",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "upgradePackages": true,
+      "username": "vscode"
+    },
+    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+      "version": "latest",
+      "helm": "latest",
+      "kubectl": "latest"
+    },
+    "ghcr.io/devcontainers/features/azure-cli:1": {
+      "version": "latest",
+      "extensions": "aks-preview"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "moby": true
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/terraform:1": {
+      "version": "latest",
+      "tflint": "latest",
+      "installTerraformDocs": true
+    },
+    "ghcr.io/devcontainers-extra/features/kind:1": {
+      "version": "latest"
+    }
+  },
+  "forwardPorts": [
+    30080,
+    30443,
+    8001
+  ],
+  "portsAttributes": {
+    "30080": {
+      "label": "ingress-http (NodePort)"
+    },
+    "30443": {
+      "label": "ingress-https (NodePort)"
+    },
+    "8001": {
+      "label": "kubectl proxy"
+    }
+  },
+  "remoteEnv": {
+    "KUBECONFIG": "/home/vscode/.kube/config",
+    "KUBE_EDITOR": "code --wait",
+    "HELM_EXPERIMENTAL_OCI": "1",
+    "DOCKER_BUILDKIT": "1",
+    "AAD_LOGIN_METHOD": "azurecli"
+  },
+  "mounts": [
+    "source=bjj-eire-kube,target=/home/vscode/.kube,type=volume",
+    "source=bjj-eire-azure,target=/home/vscode/.azure,type=volume",
+    "source=bjj-eire-minikube,target=/home/vscode/.minikube,type=volume"
+  ],
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "6gb",
+    "storage": "32gb"
+  },
+  "onCreateCommand": "bash .devcontainer/install-helm-tools.sh",
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postStartCommand": "helm repo update >/dev/null 2>&1 || true",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        "tim-koehler.helm-intellisense",
+        "redhat.vscode-yaml",
+        // --- Azure / AKS ---
+        "ms-azuretools.vscode-aks-tools",
+        "ms-azuretools.vscode-azureresourcegroups",
+        // --- IaC / GitOps ---
+        "hashicorp.terraform",
+        "weaveworks.vscode-gitops-tools",
+        // --- Containers / Docker ---
+        "ms-azuretools.vscode-containers",
+        // --- Repo workflow ---
+        "github.vscode-github-actions",
+        "editorconfig.editorconfig",
+        "davidanson.vscode-markdownlint"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "editor.formatOnSave": true,
+        "files.eol": "\n",
+        "files.associations": {
+          "**/templates/*.yaml": "helm",
+          "**/templates/*.tpl": "helm"
+        },
+        "yaml.schemas": {
+          "bjj-eire/artifact/values.schema.json": [
+            "bjj-eire/artifact/values.yaml",
+            "bjj-eire/artifact/values-*.yaml"
+          ],
+          "kubernetes": "manifests/**/*.yaml"
+        },
+        "yaml.format.enable": true,
+        "redhat.telemetry.enabled": false,
+        "cSpell.words": [
+          "azurecli",
+          "kubeconform",
+          "kubeconfig",
+          "kubectl",
+          "kubelogin",
+          "minikube",
+          "kustomize",
+          "tflint",
+          "terragrunt",
+          "fluxcd",
+          "GHCR",
+          "bitnami",
+          "yamale",
+          "yamllint"
+        ],
+        "vs-kubernetes": {
+          "vs-kubernetes.crd-code-completion": "enabled",
+          "vs-kubernetes.kubectl-path": "/usr/local/bin/kubectl",
+          "vs-kubernetes.helm-path": "/usr/local/bin/helm"
+        }
+      }
+    }
+  },
+  "remoteUser": "vscode"
+}
