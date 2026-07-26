@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/api-v0.1.5...api-v0.1.6) (2026-07-26)
+
+
+### ### Features
+
+* update helm charts from java migration ([26f7b04](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/26f7b041101fc0d788fe4cea43d550a1a39b539b))
+
 ## [0.1.5](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/api-v0.1.4...api-v0.1.5) (2026-05-31)
 
 
