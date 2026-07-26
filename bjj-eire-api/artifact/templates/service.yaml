@@ -13,12 +13,6 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
-    {{- if .Values.api.service.httpsPort }}
-    - port: {{ .Values.api.service.httpsPort }}
-      targetPort: https
-      protocol: TCP
-      name: https
-    {{- end }}
   selector:
     {{- include "bjj-api.selectorLabels" . | nindent 4 }}
 {{- end }}

@@ -128,7 +128,7 @@ bjj-api:
         type: RuntimeDefault
     securityContext:
       allowPrivilegeEscalation: false
-      readOnlyRootFilesystem: false
+      readOnlyRootFilesystem: true
       runAsNonRoot: true
       runAsUser: 1000
       capabilities:
@@ -136,54 +136,36 @@ bjj-api:
           - ALL
     service:
       type: ClusterIP
-      port: 80
+      port: 8080
+
+    springProfiles: ""
+    jvmOpts: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0"
 
     env:
-      ASPNETCORE_ENVIRONMENT: Production
-      ASPNETCORE_URLS: "http://+:80"
-      ASPNETCORE_HTTP_PORT: "80"
-      CorsOptions__AllowedOrigins: "https://bjjeire.com"
-      CorsOptions__AllowedMethods: "GET,POST,PUT,DELETE"
-      CorsOptions__AllowedHeaders: "Authorization,Content-Type"
-      RateLimitOptions__EnableRateLimiting: "true"
-      RateLimitOptions__PermitLimit: "5"
-      RateLimitOptions__WindowInSeconds: "10"
-      RateLimitOptions__RejectionStatusCode: "429"
-      CacheOptions__DefaultExpirationMinutes: "5"
-      MongoDb__MaxConnectionPoolSize: "100"
-      MongoDb__ServerSelectionTimeoutSeconds: "5"
-      MongoDb__ConnectTimeoutSeconds: "10"
-      MongoDb__SocketTimeoutSeconds: "30"
-      MongoDb__EnableCompression: "true"
-      ReadOnlyMode__Enabled: "true"
-      CompetitionDeactivation__Interval: "1.00:00:00"
-      CompetitionDeactivation__InitialDelay: "00:00:30"
-      FeatureManagement__BjjEvents: "true"
-      FeatureManagement__Gyms: "true"
-      FeatureManagement__Stores: "true"
-      FeatureManagement__Competitions: "true"
-      Donation__BitcoinAddress: ""
-      ServiceDefaults__ServiceName: "BjjEire.Api"
-      ServiceDefaults__EnablePrometheus: "true"
-      AzureAd__Instance: "https://login.microsoftonline.com/"
-      AzureAd__TenantId: ""
-      AzureAd__ClientId: ""
-      AzureAd__Audience: ""
-      Serilog__Properties__Application: "BjjEire.Api"
-      OTEL_EXPORTER_OTLP_ENDPOINT: ""
-      OTEL_RESOURCE_ATTRIBUTES__service.name: "BjjEire.Api"
-      OTEL_RESOURCE_ATTRIBUTES__deployment.environment: "Production"
+      CORS_ALLOWED_ORIGIN: "https://bjjeire.com"
+      RATE_LIMIT_ENABLED: "true"
+      RATE_LIMIT_PERMIT_LIMIT: "5"
+      RATE_LIMIT_WINDOW_SECONDS: "10"
+      RATE_LIMIT_REJECTION_STATUS_CODE: "429"
+      READ_ONLY_MODE_ENABLED: "true"
+      FEATURE_BJJ_EVENTS: "true"
+      FEATURE_GYMS: "true"
+      FEATURE_STORES: "true"
+      FEATURE_COMPETITIONS: "true"
+      ENTRA_ISSUER_URI: "https://login.microsoftonline.com/REPLACE_WITH_YOUR_TENANT_ID/v2.0"
+      ENTRA_AUDIENCE: "api://REPLACE_WITH_YOUR_CLIENT_ID"
+      DONATION_BITCOIN_ADDRESS: ""
 
     resources:
       limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
         cpu: 500m
         memory: 512Mi
-      requests:
-        cpu: 250m
-        memory: 256Mi
     livenessProbe:
       httpGet:
-        path: /health
+        path: /actuator/health/liveness
         port: http
         scheme: HTTP
       initialDelaySeconds: 30
@@ -193,7 +175,7 @@ bjj-api:
       successThreshold: 1
     readinessProbe:
       httpGet:
-        path: /health
+        path: /actuator/health/readiness
         port: http
         scheme: HTTP
       initialDelaySeconds: 10
@@ -203,7 +185,7 @@ bjj-api:
       successThreshold: 1
     startupProbe:
       httpGet:
-        path: /health
+        path: /actuator/health/readiness
         port: http
         scheme: HTTP
       initialDelaySeconds: 0
@@ -219,8 +201,6 @@ bjj-api:
       minReplicas: 1
       maxReplicas: 10
       targetCPUUtilizationPercentage: 80
-    kestrelCert:
-      enabled: false
 
   mongodb:
     config:
@@ -303,7 +283,7 @@ bjj-frontend:
     env:
       NODE_ENV: production
       PORT: "80"
-      SERVICES_API_HTTP_0: "http://bjj-api:80"
+      SERVICES_API_HTTP_0: "http://bjj-api:8080"
 
     resources:
       limits:
@@ -353,7 +333,7 @@ bjj-frontend:
       targetMemoryUtilizationPercentage: 80
     waitForApi:
       enabled: true
-      apiUrl: "http://bjj-api.bjjeire-app.svc.cluster.local:80/health"
+      apiUrl: "http://bjj-api.bjjeire-app.svc.cluster.local:8080/health"
       image: curlimages/curl:8.19.0
 
   ingress:

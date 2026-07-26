@@ -44,7 +44,9 @@ spec:
                 - ALL
           args: ["--force"]
           env:
-            - name: ASPNETCORE_ENVIRONMENT
+            - name: SPRING_PROFILES_ACTIVE
+              value: seeder
+            - name: BJJ_ENVIRONMENT
               value: Production
             - name: SEED_DATASET
               value: {{ .Values.seeder.dataset | default "production" | quote }}
@@ -54,8 +56,10 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.seeder.mongodb.secretName }}
                   key: {{ .Values.seeder.mongodb.secretKey }}
-            - name: ConnectionStrings__Mongodb
+            - name: MONGODB_URI
               value: "mongodb://{{ .Values.seeder.mongodb.user }}:$(MONGO_PASSWORD)@{{ .Values.seeder.mongodb.host }}:{{ .Values.seeder.mongodb.port }}/{{ .Values.seeder.mongodb.database }}?authSource=admin&authMechanism=SCRAM-SHA-256"
+            - name: MONGODB_DATABASE
+              value: {{ .Values.seeder.mongodb.database | quote }}
           resources:
             requests:
               cpu: 100m

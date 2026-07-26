@@ -10,35 +10,18 @@ bjj-api:
       pullPolicy: IfNotPresent
       tag: ""
     env:
-      ASPNETCORE_ENVIRONMENT: Staging
-      ASPNETCORE_URLS: "http://+:80"
-      ASPNETCORE_HTTP_PORT: "80"
-      CorsOptions__AllowedOrigins: "https://dev.bjjeire.ie,http://dev.bjjeire.ie"
-      CorsOptions__AllowedMethods: "GET,POST,PUT,DELETE"
-      CorsOptions__AllowedHeaders: "Authorization,Content-Type"
-      RateLimitOptions__EnableRateLimiting: "false"
-      RateLimitOptions__PermitLimit: "5"
-      RateLimitOptions__WindowInSeconds: "10"
-      RateLimitOptions__RejectionStatusCode: "429"
-      CacheOptions__DefaultExpirationMinutes: "5"
-      ReadOnlyMode__Enabled: "true"
-      CompetitionDeactivation__Interval: "1.00:00:00"
-      CompetitionDeactivation__InitialDelay: "00:00:30"
-      FeatureManagement__BjjEvents: "true"
-      FeatureManagement__Gyms: "true"
-      FeatureManagement__Stores: "true"
-      FeatureManagement__Competitions: "true"
-      ServiceDefaults__ServiceName: "BjjEire.Api"
-      ServiceDefaults__EnablePrometheus: "false"
-      AzureAd__Instance: "https://login.microsoftonline.com/"
-      AzureAd__TenantId: ""
-      AzureAd__ClientId: ""
-      AzureAd__Audience: ""
-      Donation__BitcoinAddress: ""
-      Serilog__Properties__Application: "BjjEire.Api"
-      OTEL_EXPORTER_OTLP_ENDPOINT: ""
-      OTEL_RESOURCE_ATTRIBUTES__service.name: "BjjEire.Api"
-      OTEL_RESOURCE_ATTRIBUTES__deployment.environment: "Staging"
+      BJJEIRE_CORS_ALLOWEDORIGINS_0: "https://dev.bjjeire.ie"
+      BJJEIRE_CORS_ALLOWEDORIGINS_1: "http://dev.bjjeire.ie"
+      RATE_LIMIT_ENABLED: "false"
+      RATE_LIMIT_PERMIT_LIMIT: "5"
+      RATE_LIMIT_WINDOW_SECONDS: "10"
+      RATE_LIMIT_REJECTION_STATUS_CODE: "429"
+      READ_ONLY_MODE_ENABLED: "true"
+      FEATURE_BJJ_EVENTS: "true"
+      FEATURE_GYMS: "true"
+      FEATURE_STORES: "true"
+      FEATURE_COMPETITIONS: "true"
+      DONATION_BITCOIN_ADDRESS: ""
   ingress:
     annotations:
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
@@ -62,7 +45,7 @@ bjj-frontend:
     env:
       NODE_ENV: production
       PORT: "80"
-      SERVICES_API_HTTP_0: "http://bjj-api:80"
+      SERVICES_API_HTTP_0: "http://bjj-api:8080"
     autoscaling:
       enabled: false
   ingress:

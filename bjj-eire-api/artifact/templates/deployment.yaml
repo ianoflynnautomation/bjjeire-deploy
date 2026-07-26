@@ -22,6 +22,9 @@ spec:
         {{- end }}
       labels:
         {{- include "bjj-api.selectorLabels" . | nindent 8 }}
+        {{- with .Values.api.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       {{- with .Values.api.imagePullSecrets }}
       imagePullSecrets:
@@ -60,25 +63,23 @@ spec:
         - name: http
           containerPort: {{ .Values.api.service.port }}
           protocol: TCP
-        {{- if .Values.api.service.httpsPort }}
-        - name: https
-          containerPort: {{ .Values.api.service.httpsPort }}
-          protocol: TCP
-        {{- end }}
         envFrom:
         - configMapRef:
             name: {{ include "bjj-api.fullname" . }}
         env:
-        - name: ConnectionStrings__Mongodb
+        - name: SERVER_PORT
+          value: {{ .Values.api.service.port | quote }}
+        - name: MONGODB_URI
           value: {{ include "bjj-api.mongodb.connectionString" . | quote }}
-        {{- if .Values.api.kestrelCert.enabled }}
-        - name: ASPNETCORE_Kestrel__Certificates__Default__Password
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.secrets.apiKestrelCertPassword.name }}
-              key: {{ .Values.secrets.apiKestrelCertPassword.key }}
-        - name: ASPNETCORE_Kestrel__Certificates__Default__Path
-          value: "{{ .Values.api.kestrelCert.mountPath }}/aspnetapp.pfx"
+        - name: MONGODB_DATABASE
+          value: {{ .Values.mongodb.config.database | quote }}
+        {{- if .Values.api.springProfiles }}
+        - name: SPRING_PROFILES_ACTIVE
+          value: {{ .Values.api.springProfiles | quote }}
+        {{- end }}
+        {{- if .Values.api.jvmOpts }}
+        - name: JAVA_TOOL_OPTIONS
+          value: {{ .Values.api.jvmOpts | quote }}
         {{- end }}
         {{- if .Values.api.livenessProbe }}
         livenessProbe:
@@ -95,13 +96,10 @@ spec:
         resources:
           {{- toYaml .Values.api.resources | nindent 10 }}
         volumeMounts:
+        # Writable temp dir so the container root filesystem can stay read-only
+        # (Spring Boot / embedded Tomcat write to java.io.tmpdir=/tmp).
         - name: tmp
           mountPath: /tmp
-        {{- if .Values.api.kestrelCert.enabled }}
-        - name: kestrel-cert
-          mountPath: {{ .Values.api.kestrelCert.mountPath }}
-          readOnly: true
-        {{- end }}
         {{- if .Values.azure.enabled }}
         - name: secrets-store-vol
           mountPath: /mnt/secrets-store
@@ -110,11 +108,6 @@ spec:
       volumes:
       - name: tmp
         emptyDir: {}
-      {{- if .Values.api.kestrelCert.enabled }}
-      - name: kestrel-cert
-        secret:
-          secretName: {{ .Values.api.kestrelCert.secretName }}
-      {{- end }}
       {{- if .Values.azure.enabled }}
       - name: secrets-store-vol
         csi:

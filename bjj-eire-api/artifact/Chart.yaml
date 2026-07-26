@@ -1,13 +1,13 @@
 apiVersion: v2
 name: bjj-api
-description: A Helm chart for BJJ Application API - ASP.NET Core Web API
+description: A Helm chart for the BJJ Éire API — Java 25 / Spring Boot Web API
 type: application
-version: 0.1.5
+version: 0.2.0
 appVersion: "1.0.0"
 keywords:
   - api
-  - aspnet
-  - dotnet
+  - java
+  - spring-boot
   - bjj
 maintainers:
   - name: DevOps Team
