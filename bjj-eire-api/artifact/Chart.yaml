@@ -2,7 +2,7 @@ apiVersion: v2
 name: bjj-api
 description: A Helm chart for the BJJ Éire API — Java 25 / Spring Boot Web API
 type: application
-version: 0.2.0
+version: 0.1.5
 appVersion: "1.0.0"
 keywords:
   - api
