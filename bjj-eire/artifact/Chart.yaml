@@ -3,7 +3,7 @@ name: bjj-eire
 description: Umbrella Helm chart for BJJ Éire — React 19 frontend + Java 25 /
   Spring Boot API + MongoDB
 type: application
-version: 0.1.14
+version: 0.2.0
 appVersion: "1.0.0"
 keywords:
   - bjj
@@ -16,7 +16,7 @@ maintainers:
     email: devops@example.com
 dependencies:
   - name: bjj-mongodb
-    version: ">=0.0.0-0"
+    version: ">=0.1.4"
     repository: "file://../../bjj-eire-mongodb/artifact"
     condition: bjj-mongodb.mongodb.enabled
   - name: bjj-api
