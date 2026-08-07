@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.2.1](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/umbrella-v0.2.0...umbrella-v0.2.1) (2026-08-07)
+
+
+### ### Features
+
+* add local observability ([ae1aaaa](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/ae1aaaabb70cd7c8aa6a4a97f620a3f7dd279694))
+* add mongo db settings ([45c44e7](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/45c44e7318ba74747353e1922cd3b8164a1565bd))
+* add seeder dataset flag ([757157e](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/757157e7321510344980ce813572cb640d6a3659))
+* update helm charts from java migration ([26f7b04](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/26f7b041101fc0d788fe4cea43d550a1a39b539b))
+
+
+### ### Bug Fixes
+
+* update  bjj-eire artifact version ([21c75a0](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/21c75a00e2fc98ec189425f8d09ec81ca36e2a01))
+
 ## [0.1.14](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/umbrella-v0.1.13...umbrella-v0.1.14) (2026-07-26)
 
 
