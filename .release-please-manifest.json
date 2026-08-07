@@ -1,6 +1,6 @@
 {
   "bjj-eire/artifact": "0.1.14",
   "bjj-eire-api/artifact": "0.1.6",
-  "bjj-eire-mongodb/artifact": "0.1.3",
+  "bjj-eire-mongodb/artifact": "0.1.4",
   "bjj-eire-web/artifact": "0.1.5"
 }
