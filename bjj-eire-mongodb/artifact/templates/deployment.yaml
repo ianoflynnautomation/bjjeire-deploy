@@ -145,7 +145,7 @@ spec:
     - metadata:
         name: mongodb-data
         labels:
-          {{- include "bjj-mongodb.labels" . | nindent 10 }}
+          {{- include "bjj-mongodb.selectorLabels" . | nindent 10 }}
       spec:
         accessModes:
           {{- toYaml .Values.mongodb.persistence.accessModes | nindent 10 }}
