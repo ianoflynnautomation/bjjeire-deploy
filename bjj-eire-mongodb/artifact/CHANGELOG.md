@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/mongodb-v0.1.3...mongodb-v0.1.4) (2026-08-07)
+
+
+### ### Bug Fixes
+
+* mongodb deployment issue ([5ce039c](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/5ce039c32723a064327c6865e07dc41e2e95b777))
+
 ## [0.1.3](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/mongodb-v0.1.2...mongodb-v0.1.3) (2026-06-14)
 
 
