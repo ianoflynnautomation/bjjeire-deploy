@@ -25,8 +25,8 @@ bjj-api:
       prometheus.io/path: "/metrics"
       prometheus.io/port: "8080"
     env:
-      BJJEIRE_CORS_ALLOWEDORIGINS_0: "https://staging.bjjeire.ie"
-      BJJEIRE_CORS_ALLOWEDORIGINS_1: "https://www.staging.bjjeire.ie"
+      BJJEIRE_CORS_ALLOWEDORIGINS_0: "https://staging.bjjeire.com"
+      BJJEIRE_CORS_ALLOWEDORIGINS_1: "https://www.staging.bjjeire.com"
       RATE_LIMIT_ENABLED: "true"
       RATE_LIMIT_PERMIT_LIMIT: "5"
       RATE_LIMIT_WINDOW_SECONDS: "10"
@@ -58,14 +58,14 @@ bjj-api:
       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
     hosts:
-      - host: api.staging.bjjeire.ie
+      - host: api.staging.bjjeire.com
         paths:
           - path: /
             pathType: Prefix
     tls:
       - secretName: bjj-staging-api-tls
         hosts:
-          - api.staging.bjjeire.ie
+          - api.staging.bjjeire.com
   azure:
     enabled: true
     workloadIdentity:
@@ -104,19 +104,19 @@ bjj-frontend:
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
     hosts:
-      - host: staging.bjjeire.ie
+      - host: staging.bjjeire.com
         paths:
           - path: /
             pathType: Prefix
-      - host: www.staging.bjjeire.ie
+      - host: www.staging.bjjeire.com
         paths:
           - path: /
             pathType: Prefix
     tls:
       - secretName: bjj-staging-frontend-tls
         hosts:
-          - staging.bjjeire.ie
-          - www.staging.bjjeire.ie
+          - staging.bjjeire.com
+          - www.staging.bjjeire.com
 seeder:
   dataset: "test"
   image:

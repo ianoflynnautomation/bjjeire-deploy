@@ -10,8 +10,8 @@ bjj-api:
       pullPolicy: IfNotPresent
       tag: ""
     env:
-      BJJEIRE_CORS_ALLOWEDORIGINS_0: "https://dev.bjjeire.ie"
-      BJJEIRE_CORS_ALLOWEDORIGINS_1: "http://dev.bjjeire.ie"
+      BJJEIRE_CORS_ALLOWEDORIGINS_0: "https://dev.bjjeire.com"
+      BJJEIRE_CORS_ALLOWEDORIGINS_1: "http://dev.bjjeire.com"
       RATE_LIMIT_ENABLED: "false"
       RATE_LIMIT_PERMIT_LIMIT: "5"
       RATE_LIMIT_WINDOW_SECONDS: "10"
@@ -28,14 +28,14 @@ bjj-api:
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     hosts:
-      - host: api.dev.bjjeire.ie
+      - host: api.dev.bjjeire.com
         paths:
           - path: /
             pathType: Prefix
     tls:
       - secretName: bjj-dev-tls-secret
         hosts:
-          - api.dev.bjjeire.ie
+          - api.dev.bjjeire.com
 bjj-frontend:
   frontend:
     image:
@@ -53,14 +53,14 @@ bjj-frontend:
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     hosts:
-      - host: dev.bjjeire.ie
+      - host: dev.bjjeire.com
         paths:
           - path: /
             pathType: Prefix
     tls:
       - secretName: bjj-dev-tls-secret
         hosts:
-          - dev.bjjeire.ie
+          - dev.bjjeire.com
 seeder:
   dataset: "test"
   image:
