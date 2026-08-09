@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/umbrella-v0.2.1...umbrella-v0.2.2) (2026-08-09)
+
+
+### ### Bug Fixes
+
+* bjjeire cors urls ([1d386da](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/1d386da908fec2ee29bdc4b48eaef72f2bd7384d))
+
 ## [0.2.1](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/umbrella-v0.2.0...umbrella-v0.2.1) (2026-08-07)
 
 
