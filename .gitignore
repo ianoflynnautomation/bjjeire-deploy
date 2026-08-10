@@ -35,9 +35,6 @@ Chart.lock
 *.secret
 *.secrets
 
-# Dev Container
-# Keep .devcontainer/ tracked (it's shared team config), but ignore local
-# machine-specific overrides and any generated cluster/kube state.
 .devcontainer/devcontainer.local.json
 .devcontainer/*.local
 kubeconfig

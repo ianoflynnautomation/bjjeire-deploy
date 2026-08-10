@@ -1,0 +1,34 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":prHourlyLimit4",
+    ":prConcurrentLimit10"
+  ],
+  "labels": ["dependencies", "renovate"],
+  "timezone": "Europe/Dublin",
+  "schedule": ["after 6am and before 10pm every weekday"],
+  "gitAuthor": "Renovate Bot <renovate@users.noreply.github.com>",
+  "dependencyDashboardTitle": "Dependency Dashboard (Helm charts)",
+  "prBodyNotes": [
+    "Release trains are decoupled: each subchart (`bjj-api`/`bjj-frontend`/`bjj-mongodb`) is versioned and published to GHCR OCI by release-please + publish-chart.yml.",
+    "This PR bumps the umbrella's dependency pin. It uses a `fix:` commit so release-please cuts a new **umbrella** release, which republishes the OCI umbrella chart that Flux consumes.",
+    "Requires the Renovate token to have `read:packages` on ghcr.io (charts are private)."
+  ],
+  "enabledManagers": ["helmv3"],
+  "helmv3": {
+    "managerFilePatterns": ["/(^|/)bjj-eire/artifact/Chart\\.ya?ml$/"]
+  },
+  "packageRules": [
+    {
+      "description": "Internal BJJ Éire subcharts pinned in the umbrella. fix: => release-please bumps the umbrella and republishes to OCI.",
+      "matchManagers": ["helmv3"],
+      "matchDepNames": ["bjj-api", "bjj-frontend", "bjj-mongodb"],
+      "groupName": "bjj-eire subcharts",
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "deps"
+    }
+  ]
+}

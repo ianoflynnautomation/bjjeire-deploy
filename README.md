@@ -156,7 +156,7 @@ helm upgrade --install bjj-eire bjj-eire/artifact \
 | Environment | Frontend | API |
 |---|---|---|
 | Local | `app.bjj.local` | `api.bjj.local` |
-| Dev | `dev.bjjeire.ie` | `api.dev.bjjeire.ie` |
+| Dev | `dev.bjjeire.com` | `api.dev.bjjeire.com` |
 | Prod | `bjjeire.com` | `api.bjjeire.com` |
 
 ---
