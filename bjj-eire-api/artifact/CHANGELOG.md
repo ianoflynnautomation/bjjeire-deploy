@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.7](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/api-v0.1.6...api-v0.1.7) (2026-08-13)
+
+
+### ### Features
+
+* harden helm charts bjjeire ([ca6ed55](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/ca6ed553eb0f46417ba0ccfd93f16d6dd146b29c))
+
 ## [0.1.6](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/api-v0.1.5...api-v0.1.6) (2026-07-26)
 
 
