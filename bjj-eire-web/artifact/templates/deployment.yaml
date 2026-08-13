@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "bjj-frontend.fullname" . }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "bjj-frontend.labels" . | nindent 4 }}
 spec:
@@ -22,16 +22,20 @@ spec:
         {{- end }}
       labels:
         {{- include "bjj-frontend.selectorLabels" . | nindent 8 }}
+        {{- with .Values.frontend.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
-      {{- with .Values.frontend.imagePullSecrets }}
+      {{- $pullSecrets := .Values.frontend.imagePullSecrets | default list }}
+      {{- if .Values.azure.enabled }}
+      {{- $pullSecrets = append $pullSecrets (dict "name" (printf "%s-acr-secret" (include "bjj-frontend.fullname" .))) }}
+      {{- end }}
+      {{- with $pullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if .Values.azure.enabled }}
-      imagePullSecrets:
-        - name: {{ include "bjj-frontend.fullname" . }}-acr-secret
-      {{- end }}
       serviceAccountName: {{ include "bjj-frontend.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.frontend.serviceAccount.automount | default false }}
       securityContext:
         {{- toYaml .Values.frontend.podSecurityContext | nindent 8 }}
       {{- with .Values.frontend.nodeSelector }}
@@ -59,18 +63,28 @@ spec:
         - -c
         - |
           echo "Waiting for API health check...";
-          until curl -k -s -f {{ .Values.frontend.waitForApi.apiUrl }}; do
-            echo "API health check failed (or not yet reachable), retrying...";
+          until curl -s -f {{ .Values.frontend.waitForApi.apiUrl }}; do
+            echo "API not ready, retrying...";
             sleep 5;
           done;
-          echo "API is healthy and reachable, proceeding with frontend."
+          echo "API is healthy."
         securityContext:
           allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
           runAsNonRoot: true
           runAsUser: 65534
           capabilities:
             drop:
             - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 10m
+            memory: 16Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
       {{- end }}
       containers:
       - name: frontend
@@ -99,4 +113,18 @@ spec:
         {{- end }}
         resources:
           {{- toYaml .Values.frontend.resources | nindent 10 }}
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: nginx-cache
+          mountPath: /var/cache/nginx
+        - name: nginx-run
+          mountPath: /var/run
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: nginx-cache
+        emptyDir: {}
+      - name: nginx-run
+        emptyDir: {}
 {{- end }}

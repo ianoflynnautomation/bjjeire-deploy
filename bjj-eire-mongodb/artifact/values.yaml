@@ -18,6 +18,7 @@ mongodb:
     create: true
     annotations: {}
     name: ""
+    automount: false
 
   podAnnotations: {}
 

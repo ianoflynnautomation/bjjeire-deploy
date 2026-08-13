@@ -8,9 +8,9 @@ Access:
   {{- end }}
 {{- end }}
 {{- else }}
-  kubectl port-forward svc/{{ include "bjj-api.fullname" . }} 8080:{{ .Values.api.service.port }} -n {{ .Values.namespace }}
+  kubectl port-forward svc/{{ include "bjj-api.fullname" . }} 8080:{{ .Values.api.service.port }} -n {{ .Release.Namespace }}
   Then open: http://localhost:8080
 {{- end }}
 
 Health check:
-  kubectl get pods -n {{ .Values.namespace }} -l app.kubernetes.io/name={{ include "bjj-api.name" . }}
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "bjj-api.name" . }}

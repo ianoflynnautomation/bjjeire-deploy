@@ -52,22 +52,20 @@ jobs:
           version: ${{ env.HELM_VERSION }}
 
       - name: Render umbrella chart
-        env:
-          # Dummy base64 value ("ci-dummy-password") — satisfies the Helm template lookup
-          CI_DUMMY_MONGO_PASSWORD: "Y2ktZHVtbXktcGFzc3dvcmQ="
         run: |
           helm dependency build bjj-eire/artifact
+          # Password is secretKeyRef at runtime — no value needed to template
           helm template bjj-eire bjj-eire/artifact \
+            --namespace bjjeire-app \
             --set bjj-api.api.image.tag=ci \
             --set bjj-frontend.frontend.image.tag=ci \
-            --set "bjj-api.secrets.mongodbRootPassword.value=${CI_DUMMY_MONGO_PASSWORD}" \
-            --set "bjj-mongodb.secrets.mongodbRootPassword.value=${CI_DUMMY_MONGO_PASSWORD}" \
+            --set seeder.enabled=false \
             --debug > /tmp/rendered.yaml
 
       - name: Install kubeconform
         run: |
           curl -sSLo /tmp/kubeconform.tar.gz \
-            https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz
+            https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
           tar -xzf /tmp/kubeconform.tar.gz -C /usr/local/bin
 
       - name: Validate rendered manifests

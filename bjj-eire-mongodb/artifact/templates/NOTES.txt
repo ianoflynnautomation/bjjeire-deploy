@@ -2,7 +2,7 @@
 
    MongoDB is available at the following DNS name within your cluster:
 
-   {{ include "bjj-mongodb.fullname" . }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.mongodb.service.port }}
+   {{ include "bjj-mongodb.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.mongodb.service.port }}
 
 2. To connect to MongoDB from within the cluster:
 
@@ -12,12 +12,12 @@
 
 3. To connect to MongoDB from outside the cluster, execute the following commands:
 
-   export MONGODB_ROOT_PASSWORD=$(kubectl get secret --namespace {{ .Values.namespace }} {{ .Values.secrets.mongodbRootPassword.name }} -o jsonpath="{.data.{{ .Values.secrets.mongodbRootPassword.key }}}" | base64 -d)
+   export MONGODB_ROOT_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ .Values.secrets.mongodbRootPassword.name }} -o jsonpath="{.data.{{ .Values.secrets.mongodbRootPassword.key }}}" | base64 -d)
 
-   kubectl port-forward --namespace {{ .Values.namespace }} svc/{{ include "bjj-mongodb.fullname" . }} {{ .Values.mongodb.service.port }}:{{ .Values.mongodb.service.port }} &
+   kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "bjj-mongodb.fullname" . }} {{ .Values.mongodb.service.port }}:{{ .Values.mongodb.service.port }} &
 
    mongosh --host 127.0.0.1 --authenticationDatabase admin -p $MONGODB_ROOT_PASSWORD
 
 4. Connection String for applications:
 
-   mongodb://{{ .Values.mongodb.config.user }}:<password>@{{ include "bjj-mongodb.fullname" . }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.mongodb.service.port }}/{{ .Values.mongodb.config.database }}?authSource=admin&authMechanism=SCRAM-SHA-256
+   mongodb://{{ .Values.mongodb.config.user }}:<password>@{{ include "bjj-mongodb.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.mongodb.service.port }}/{{ .Values.mongodb.config.database }}?authSource=admin&authMechanism=SCRAM-SHA-256

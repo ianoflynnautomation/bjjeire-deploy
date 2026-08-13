@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ include "bjj-mongodb.fullname" . }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "bjj-mongodb.labels" . | nindent 4 }}
 spec:
@@ -28,6 +28,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "bjj-mongodb.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.mongodb.serviceAccount.automount | default false }}
       securityContext:
         {{- toYaml .Values.mongodb.podSecurityContext | nindent 8 }}
       {{- with .Values.mongodb.nodeSelector }}
@@ -89,7 +90,7 @@ spec:
           image: "{{ .Values.mongodb.metrics.image.repository }}:{{ .Values.mongodb.metrics.image.tag }}"
           imagePullPolicy: {{ .Values.mongodb.metrics.image.pullPolicy }}
           args:
-            - --mongodb.uri=mongodb://127.0.0.1:{{ .Values.mongodb.service.port }}/admin
+            - --mongodb.uri=mongodb://$(MONGODB_USER):$(MONGODB_PASSWORD)@127.0.0.1:{{ .Values.mongodb.service.port }}/admin?authSource=admin
             {{- if .Values.mongodb.metrics.collectAll }}
             - --collect-all
             {{- end }}
@@ -131,14 +132,20 @@ spec:
           resources:
             {{- toYaml .Values.mongodb.metrics.resources | nindent 12 }}
         {{- end }}
-      {{- if .Values.azure.enabled }}
+      {{- if or (not .Values.mongodb.persistence.enabled) .Values.azure.enabled }}
       volumes:
+        {{- if not .Values.mongodb.persistence.enabled }}
+        - name: mongodb-data
+          emptyDir: {}
+        {{- end }}
+        {{- if .Values.azure.enabled }}
         - name: secrets-store-vol
           csi:
             driver: secrets-store.csi.k8s.io
             readOnly: true
             volumeAttributes:
               secretProviderClass: {{ include "bjj-mongodb.fullname" . }}-akv-secrets
+        {{- end }}
       {{- end }}
   {{- if .Values.mongodb.persistence.enabled }}
   volumeClaimTemplates:
@@ -153,7 +160,5 @@ spec:
         resources:
           requests:
             storage: {{ .Values.mongodb.persistence.size }}
-  {{- else }}
-  # persistence disabled — data is ephemeral
   {{- end }}
 {{- end }}

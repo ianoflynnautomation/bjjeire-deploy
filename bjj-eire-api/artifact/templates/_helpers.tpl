@@ -7,8 +7,6 @@ Expand the name of the chart.
 
 {{/*
 Create a default fully qualified app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
 */}}
 {{- define "bjj-api.fullname" -}}
 {{- if .Values.fullnameOverride }}
@@ -63,28 +61,8 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
-Generate MongoDB connection string
+MongoDB URI without password — password injected via $(MONGO_PASSWORD) env expansion.
 */}}
-{{- define "bjj-api.mongodb.connectionString" -}}
-{{- $mongodbRootPassword := "" -}}
-{{- if .Values.azure.enabled -}}
-  {{- $secret := lookup "v1" "Secret" .Values.namespace .Values.secrets.mongodbRootPassword.name -}}
-  {{- if $secret -}}
-    {{- $mongodbRootPassword = index $secret.data .Values.secrets.mongodbRootPassword.key | b64dec -}}
-  {{- else -}}
-    {{- fail (printf "Secret '%s' not found for Azure deployment. Ensure Secret Store CSI driver is syncing it from Key Vault." .Values.secrets.mongodbRootPassword.name) -}}
-  {{- end -}}
-{{- else -}}
-  {{- if .Values.secrets.mongodbRootPassword.value -}}
-    {{- $mongodbRootPassword = .Values.secrets.mongodbRootPassword.value | b64dec -}}
-  {{- else -}}
-    {{- $secret := lookup "v1" "Secret" .Values.namespace .Values.secrets.mongodbRootPassword.name -}}
-    {{- if $secret -}}
-      {{- $mongodbRootPassword = index $secret.data .Values.secrets.mongodbRootPassword.key | b64dec -}}
-    {{- else -}}
-      {{- fail (printf "MongoDB password not found. Secret '%s' does not exist in namespace '%s'. Please ensure MongoDB is deployed first or provide secrets.mongodbRootPassword.value" .Values.secrets.mongodbRootPassword.name .Values.namespace) -}}
-    {{- end -}}
-  {{- end -}}
-{{- end -}}
-{{- printf "mongodb://%s:%s@%s:%s/%s?authSource=admin&authMechanism=SCRAM-SHA-256" .Values.mongodb.config.user $mongodbRootPassword .Values.mongodb.config.host (.Values.mongodb.config.port | toString) .Values.mongodb.config.database -}}
+{{- define "bjj-api.mongodb.uriTemplate" -}}
+mongodb://{{ .Values.mongodb.config.user }}:$(MONGO_PASSWORD)@{{ .Values.mongodb.config.host }}:{{ .Values.mongodb.config.port }}/{{ .Values.mongodb.config.database }}?authSource=admin&authMechanism=SCRAM-SHA-256
 {{- end }}

@@ -16,6 +16,8 @@ api:
     create: true
     annotations: {}
     name: ""
+    # true required for Azure Workload Identity; set false if unused
+    automount: true
 
   podAnnotations: {}
 
@@ -43,7 +45,9 @@ api:
   jvmOpts: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0"
 
   env:
-    CORS_ALLOWED_ORIGIN: "https://bjjeire.com"
+    # App binds bjjeire.cors.allowed-origins (a list). Use the indexed form so
+    # multiple origins are possible and the key matches the env overlays.
+    BJJEIRE_CORS_ALLOWEDORIGINS_0: "https://bjjeire.com"
     RATE_LIMIT_ENABLED: "true"
     RATE_LIMIT_PERMIT_LIMIT: "5"
     RATE_LIMIT_WINDOW_SECONDS: "10"

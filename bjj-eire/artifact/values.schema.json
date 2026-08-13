@@ -6,7 +6,7 @@
   "properties": {
     "bjj-mongodb": {
       "type": "object",
-      "required": ["namespace", "mongodb"],
+      "required": ["mongodb"],
       "properties": {
         "namespace": { "type": "string", "minLength": 1 },
         "mongodb": {
@@ -32,7 +32,7 @@
     },
     "bjj-api": {
       "type": "object",
-      "required": ["namespace", "api"],
+      "required": ["api"],
       "properties": {
         "namespace": { "type": "string", "minLength": 1 },
         "api": {
@@ -52,7 +52,7 @@
     },
     "bjj-frontend": {
       "type": "object",
-      "required": ["namespace", "frontend"],
+      "required": ["frontend"],
       "properties": {
         "namespace": { "type": "string", "minLength": 1 },
         "frontend": {
@@ -75,6 +75,10 @@
       "required": ["enabled", "image"],
       "properties": {
         "enabled": { "type": "boolean" },
+        "force": { "type": "boolean" },
+        "environment": { "type": "string" },
+        "dataset": { "type": "string" },
+        "hookPolicy": { "type": "string" },
         "image": {
           "type": "object",
           "required": ["repository", "tag"],

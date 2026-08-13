@@ -1,4 +1,26 @@
 {{- if .Values.seeder.enabled }}
+{{- $saName := default (printf "%s-seeder" .Release.Name) .Values.seeder.serviceAccount.name }}
+{{- if .Values.seeder.serviceAccount.create | default true }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $saName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: bjjeire-seeder
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: seeder
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+    "helm.sh/hook": {{ .Values.seeder.hookPolicy }}
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    {{- with .Values.seeder.serviceAccount.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+automountServiceAccountToken: {{ .Values.seeder.serviceAccount.automount | default false }}
+---
+{{- end }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -14,15 +36,21 @@ metadata:
     "helm.sh/hook-weight": "0"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
-  ttlSecondsAfterFinished: 300
+  backoffLimit: {{ .Values.seeder.backoffLimit | default 1 }}
+  ttlSecondsAfterFinished: {{ .Values.seeder.ttlSecondsAfterFinished | default 300 }}
   template:
     metadata:
       labels:
         app.kubernetes.io/name: bjjeire-seeder
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: seeder
+        {{- with .Values.seeder.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       restartPolicy: Never
+      serviceAccountName: {{ $saName }}
+      automountServiceAccountToken: {{ .Values.seeder.serviceAccount.automount | default false }}
       {{- with .Values.seeder.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -38,19 +66,20 @@ spec:
           imagePullPolicy: {{ .Values.seeder.image.pullPolicy }}
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
+          {{- if .Values.seeder.force }}
           args: ["--force"]
+          {{- end }}
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: seeder
             - name: BJJ_ENVIRONMENT
-              value: Production
+              value: {{ .Values.seeder.environment | default "Production" | quote }}
             - name: SEED_DATASET
               value: {{ .Values.seeder.dataset | default "production" | quote }}
-            # Injected first so it can be referenced via $(MONGO_PASSWORD) below
             - name: MONGO_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -60,11 +89,12 @@ spec:
               value: "mongodb://{{ .Values.seeder.mongodb.user }}:$(MONGO_PASSWORD)@{{ .Values.seeder.mongodb.host }}:{{ .Values.seeder.mongodb.port }}/{{ .Values.seeder.mongodb.database }}?authSource=admin&authMechanism=SCRAM-SHA-256"
             - name: MONGODB_DATABASE
               value: {{ .Values.seeder.mongodb.database | quote }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
           resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 500m
-              memory: 256Mi
+            {{- toYaml (.Values.seeder.resources | default (dict "requests" (dict "cpu" "100m" "memory" "128Mi") "limits" (dict "cpu" "500m" "memory" "256Mi"))) | nindent 12 }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
 {{- end }}

@@ -62,6 +62,9 @@ bjj-frontend:
         hosts:
           - dev.bjjeire.com
 seeder:
+  enabled: true
+  force: false
+  environment: Development
   dataset: "test"
   image:
     repository: ghcr.io/ianoflynnautomation/bjjeire-seeder

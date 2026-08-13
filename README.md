@@ -2,13 +2,13 @@
 
 # BJJ Eire — Helm Deployment
 
-**Kubernetes deployment assets for the BJJ Eire platform** — a full-stack Brazilian Jiu-Jitsu community app built on React 19, ASP.NET Core (.NET 10), and MongoDB, deployed to AKS via Helm.
+**Kubernetes deployment assets for the BJJ Eire platform** — a full-stack Brazilian Jiu-Jitsu community app built on React 19, Java 25 / Spring Boot, and MongoDB, deployed to AKS via Helm.
 
 [![CI](https://github.com/ianoflynnautomation/bjjeire-deploy/actions/workflows/ci.yml/badge.svg)](https://github.com/ianoflynnautomation/bjjeire-deploy/actions/workflows/ci.yml)
 [![Release](https://github.com/ianoflynnautomation/bjjeire-deploy/actions/workflows/release.yml/badge.svg)](https://github.com/ianoflynnautomation/bjjeire-deploy/actions/workflows/release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Helm](https://img.shields.io/badge/Helm-v3.16.4-0f1689?logo=helm)](https://helm.sh)
-[![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)](https://dotnet.microsoft.com)
+[![Java](https://img.shields.io/badge/Java-25-ED8B00?logo=openjdk)](https://openjdk.org)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev)
 [![MongoDB](https://img.shields.io/badge/MongoDB-7.0-47A248?logo=mongodb)](https://www.mongodb.com)
 
@@ -22,7 +22,7 @@ This repository contains all Helm charts and CI/CD workflows to deploy the BJJ E
 
 | Chart | Description |
 |---|---|
-| `bjj-api` | ASP.NET Core 10 REST API with Azure AD auth, Prometheus metrics, OpenTelemetry |
+| `bjj-api` | Java 25 / Spring Boot REST API with Azure AD auth, Prometheus metrics, OpenTelemetry |
 | `bjj-frontend` | React 19 + Nginx single-page app |
 | `bjj-mongodb` | MongoDB 7.0 with persistent storage |
 

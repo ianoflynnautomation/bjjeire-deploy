@@ -17,6 +17,7 @@ frontend:
     create: true
     annotations: {}
     name: ""
+    automount: false
 
   podAnnotations: {}
 
@@ -29,7 +30,7 @@ frontend:
 
   securityContext:
     allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: false
+    readOnlyRootFilesystem: true
     runAsNonRoot: true
     runAsUser: 101
     capabilities:
@@ -43,7 +44,7 @@ frontend:
   env:
     NODE_ENV: production
     PORT: "80"
-    SERVICES_API_HTTP_0: "http://bjj-api:80"
+    SERVICES_API_HTTP_0: "http://bjj-api:8080"
 
   resources:
     limits:
@@ -105,7 +106,7 @@ frontend:
 
   waitForApi:
     enabled: true
-    apiUrl: "http://bjj-api.bjjeire-app.svc.cluster.local:80/health"
+    apiUrl: "http://bjj-api:8080/actuator/health/readiness"
     image: curlimages/curl:8.21.0
 
 ingress:

@@ -119,6 +119,7 @@ bjj-api:
       create: true
       annotations: {}
       name: ""
+      automount: true
     podAnnotations: {}
     podSecurityContext:
       runAsNonRoot: true
@@ -142,7 +143,7 @@ bjj-api:
     jvmOpts: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0"
 
     env:
-      CORS_ALLOWED_ORIGIN: "https://bjjeire.com"
+      BJJEIRE_CORS_ALLOWEDORIGINS_0: "https://bjjeire.com"
       RATE_LIMIT_ENABLED: "true"
       RATE_LIMIT_PERMIT_LIMIT: "5"
       RATE_LIMIT_WINDOW_SECONDS: "10"
@@ -261,6 +262,7 @@ bjj-frontend:
       create: true
       annotations: {}
       name: ""
+      automount: false
     podAnnotations: {}
     podSecurityContext:
       runAsNonRoot: true
@@ -270,7 +272,7 @@ bjj-frontend:
         type: RuntimeDefault
     securityContext:
       allowPrivilegeEscalation: false
-      readOnlyRootFilesystem: false
+      readOnlyRootFilesystem: true
       runAsNonRoot: true
       runAsUser: 101
       capabilities:
@@ -333,7 +335,7 @@ bjj-frontend:
       targetMemoryUtilizationPercentage: 80
     waitForApi:
       enabled: true
-      apiUrl: "http://bjj-api.bjjeire-app.svc.cluster.local:8080/health"
+      apiUrl: "http://bjj-api:8080/actuator/health/readiness"
       image: curlimages/curl:8.19.0
 
   ingress:
@@ -364,14 +366,31 @@ bjj-frontend:
       clientId: ""
 
 seeder:
-  enabled: true
+  enabled: false
+  force: false
+  environment: Production
   dataset: "production"
   image:
     repository: ghcr.io/ianoflynnautomation/bjjeire-seeder
     pullPolicy: IfNotPresent
     tag: "0.1.9"
   imagePullSecrets: []
-  hookPolicy: "post-install,post-upgrade"
+  serviceAccount:
+    create: true
+    name: ""
+    annotations: {}
+    automount: false
+  podLabels: {}
+  hookPolicy: "post-install"
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 300
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
   mongodb:
     host: bjj-mongodb
     port: 27017

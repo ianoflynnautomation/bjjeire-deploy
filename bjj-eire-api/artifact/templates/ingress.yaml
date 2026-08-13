@@ -1,18 +1,18 @@
-{{- if and .Values.frontend.enabled .Values.ingress.enabled }}
+{{- if and .Values.api.enabled .Values.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "bjj-frontend.fullname" . }}
+  name: {{ include "bjj-api.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "bjj-frontend.labels" . | nindent 4 }}
+    {{- include "bjj-api.labels" . | nindent 4 }}
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if .Values.ingress.className }}
-  ingressClassName: {{ .Values.ingress.className }}
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
   {{- end }}
   {{- if .Values.ingress.tls }}
   tls:
@@ -34,9 +34,9 @@ spec:
             pathType: {{ .pathType }}
             backend:
               service:
-                name: {{ include "bjj-frontend.fullname" $ }}
+                name: {{ include "bjj-api.fullname" $ }}
                 port:
-                  number: {{ $.Values.frontend.service.port }}
+                  number: {{ $.Values.api.service.port }}
           {{- end }}
     {{- end }}
 {{- end }}

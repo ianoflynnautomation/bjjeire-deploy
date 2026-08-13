@@ -2,8 +2,8 @@ BJJ Éire has been deployed!
 
 Components:
   - MongoDB:  {{ .Release.Namespace }}/bjj-mongodb:27017
-  - API:      {{ .Release.Namespace }}/bjj-api:80 (HTTP) / :443 (HTTPS)
-  - Frontend: {{ .Release.Namespace }}/bjj-frontend:80 (HTTP) / :443 (HTTPS)
+  - API:      {{ .Release.Namespace }}/bjj-api:8080
+  - Frontend: {{ .Release.Namespace }}/bjj-frontend:80
 
 To check rollout status:
   kubectl rollout status deployment/bjj-api -n {{ .Release.Namespace }}

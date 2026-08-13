@@ -51,6 +51,9 @@ bjj-api:
       minReplicas: 2
       maxReplicas: 10
       targetCPUUtilizationPercentage: 70
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
   ingress:
     annotations:
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
@@ -98,6 +101,9 @@ bjj-frontend:
       maxReplicas: 6
       targetCPUUtilizationPercentage: 70
       targetMemoryUtilizationPercentage: 80
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
   ingress:
     annotations:
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
@@ -118,6 +124,10 @@ bjj-frontend:
           - bjjeire.com
           - www.bjjeire.com
 seeder:
+  # Never auto-seed prod. Run seeding as a deliberate, one-off manual Job.
+  enabled: false
+  force: false
+  environment: Production
   dataset: "production"
   image:
     repository: ghcr.io/ianoflynnautomation/bjjeire-seeder

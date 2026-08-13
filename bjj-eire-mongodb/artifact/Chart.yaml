@@ -2,8 +2,8 @@ apiVersion: v2
 name: bjj-mongodb
 description: A Helm chart for MongoDB database for BJJ Application
 type: application
-version: 0.1.4
-appVersion: "7.0"
+version: 0.1.5
+appVersion: "8.2"
 keywords:
   - mongodb
   - database

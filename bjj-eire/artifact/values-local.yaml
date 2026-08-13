@@ -69,7 +69,7 @@ bjj-frontend:
         type: RuntimeDefault
     securityContext:
       allowPrivilegeEscalation: false
-      readOnlyRootFilesystem: false
+      readOnlyRootFilesystem: true
       runAsNonRoot: true
       runAsUser: 101
       capabilities:
@@ -106,6 +106,9 @@ bjj-frontend:
 
 seeder:
   enabled: true
+  force: true
+  environment: Development
+  hookPolicy: "post-install,post-upgrade"
   dataset: "test"
   image:
     repository: bjj-seeder

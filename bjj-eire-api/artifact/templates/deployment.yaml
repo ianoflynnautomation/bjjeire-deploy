@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "bjj-api.fullname" . }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "bjj-api.labels" . | nindent 4 }}
 spec:
@@ -26,15 +26,16 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- with .Values.api.imagePullSecrets }}
+      {{- $pullSecrets := .Values.api.imagePullSecrets | default list }}
+      {{- if .Values.azure.enabled }}
+      {{- $pullSecrets = append $pullSecrets (dict "name" (printf "%s-acr-secret" (include "bjj-api.fullname" .))) }}
+      {{- end }}
+      {{- with $pullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if .Values.azure.enabled }}
-      imagePullSecrets:
-        - name: {{ include "bjj-api.fullname" . }}-acr-secret
-      {{- end }}
       serviceAccountName: {{ include "bjj-api.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.api.serviceAccount.automount | default true }}
       securityContext:
         {{- toYaml .Values.api.podSecurityContext | nindent 8 }}
       {{- with .Values.api.nodeSelector }}
@@ -69,8 +70,13 @@ spec:
         env:
         - name: SERVER_PORT
           value: {{ .Values.api.service.port | quote }}
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secrets.mongodbRootPassword.name }}
+              key: {{ .Values.secrets.mongodbRootPassword.key }}
         - name: MONGODB_URI
-          value: {{ include "bjj-api.mongodb.connectionString" . | quote }}
+          value: {{ include "bjj-api.mongodb.uriTemplate" . | quote }}
         - name: MONGODB_DATABASE
           value: {{ .Values.mongodb.config.database | quote }}
         {{- if .Values.api.springProfiles }}
@@ -96,8 +102,6 @@ spec:
         resources:
           {{- toYaml .Values.api.resources | nindent 10 }}
         volumeMounts:
-        # Writable temp dir so the container root filesystem can stay read-only
-        # (Spring Boot / embedded Tomcat write to java.io.tmpdir=/tmp).
         - name: tmp
           mountPath: /tmp
         {{- if .Values.azure.enabled }}
