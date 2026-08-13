@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/mongodb-v0.1.4...mongodb-v0.1.5) (2026-08-13)
+
+
+### ### Features
+
+* harden helm charts bjjeire ([ca6ed55](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/ca6ed553eb0f46417ba0ccfd93f16d6dd146b29c))
+
 ## [0.1.4](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/mongodb-v0.1.3...mongodb-v0.1.4) (2026-08-07)
 
 

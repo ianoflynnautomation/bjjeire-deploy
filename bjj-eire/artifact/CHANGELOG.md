@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/umbrella-v0.2.2...umbrella-v0.2.3) (2026-08-13)
+
+
+### ### Features
+
+* harden helm charts bjjeire ([ca6ed55](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/ca6ed553eb0f46417ba0ccfd93f16d6dd146b29c))
+
 ## [0.2.2](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/umbrella-v0.2.1...umbrella-v0.2.2) (2026-08-09)
 
 
