@@ -46,7 +46,7 @@ mongodb:
     enabled: false
     image:
       repository: percona/mongodb_exporter
-      tag: "0.51.0"
+      tag: "0.52.0"
       pullPolicy: IfNotPresent
     port: 9216
     compatibleMode: true
