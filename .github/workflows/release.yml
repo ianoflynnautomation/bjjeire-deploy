@@ -1,63 +1,31 @@
 name: Release — Charts
+
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pull-requests: write
-  actions: write
+  contents: read
 
 jobs:
-  release-please:
+  release:
     name: Release Please
-    runs-on: ubuntu-latest
-    outputs:
-      umbrella_released: ${{ steps.release.outputs['bjj-eire/artifact--release_created'] }}
-      umbrella_tag:      ${{ steps.release.outputs['bjj-eire/artifact--tag_name'] }}
-      api_released:      ${{ steps.release.outputs['bjj-eire-api/artifact--release_created'] }}
-      api_tag:           ${{ steps.release.outputs['bjj-eire-api/artifact--tag_name'] }}
-      mongodb_released:  ${{ steps.release.outputs['bjj-eire-mongodb/artifact--release_created'] }}
-      mongodb_tag:       ${{ steps.release.outputs['bjj-eire-mongodb/artifact--tag_name'] }}
-      web_released:      ${{ steps.release.outputs['bjj-eire-web/artifact--release_created'] }}
-      web_tag:           ${{ steps.release.outputs['bjj-eire-web/artifact--tag_name'] }}
-    steps:
-      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7  # v5.0.0
-        id: release
-        with:
-          config-file: release-please-config.json
-          manifest-file: .release-please-manifest.json
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: ianoflynnautomation/bjjeire-ci-templates/.github/workflows/release-please.yml@v1
+    with:
+      config-file: release-please-config.json
+      manifest-file: .release-please-manifest.json
 
-  dispatch-publish:
-    name: Dispatch publish-chart for released charts
-    runs-on: ubuntu-latest
-    needs: release-please
-    if: |
-      needs.release-please.outputs.api_released == 'true'
-      || needs.release-please.outputs.mongodb_released == 'true'
-      || needs.release-please.outputs.web_released == 'true'
-      || needs.release-please.outputs.umbrella_released == 'true'
-    steps:
-      - name: Dispatch publish-chart.yml per released chart
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO:  ${{ github.repository }}
-          API_RELEASED:      ${{ needs.release-please.outputs.api_released }}
-          API_TAG:           ${{ needs.release-please.outputs.api_tag }}
-          MONGODB_RELEASED:  ${{ needs.release-please.outputs.mongodb_released }}
-          MONGODB_TAG:       ${{ needs.release-please.outputs.mongodb_tag }}
-          WEB_RELEASED:      ${{ needs.release-please.outputs.web_released }}
-          WEB_TAG:           ${{ needs.release-please.outputs.web_tag }}
-          UMBRELLA_RELEASED: ${{ needs.release-please.outputs.umbrella_released }}
-          UMBRELLA_TAG:      ${{ needs.release-please.outputs.umbrella_tag }}
-        run: |
-          dispatch() {
-            local tag="$1"
-            echo "::notice title=Dispatching publish-chart::tag=$tag"
-            gh workflow run publish-chart.yml --field tag="$tag"
-          }
-          if [ "$API_RELEASED"      = "true" ]; then dispatch "$API_TAG"; fi
-          if [ "$MONGODB_RELEASED"  = "true" ]; then dispatch "$MONGODB_TAG"; fi
-          if [ "$WEB_RELEASED"      = "true" ]; then dispatch "$WEB_TAG"; fi
-          if [ "$UMBRELLA_RELEASED" = "true" ]; then dispatch "$UMBRELLA_TAG"; fi
+  publish-released:
+    name: Publish released charts
+    needs: release
+    if: needs.release.outputs.releases-created == 'true'
+    permissions:
+      actions: write
+    uses: ianoflynnautomation/bjjeire-ci-templates/.github/workflows/release-dispatch.yml@v1
+    with:
+      tags-released: ${{ needs.release.outputs.tags-released }}
+      workflow: publish-chart.yml

@@ -8,105 +8,43 @@ on:
         required: true
         type: string
 
-env:
-  REGISTRY: ghcr.io
-  OWNER: ${{ github.repository_owner }}
-  HELM_VERSION: "3.16.4"
+concurrency:
+  group: publish-chart-${{ inputs.tag }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
+  resolve:
+    name: Resolve ${{ inputs.tag }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      path: ${{ steps.chart.outputs.path }}
+      version: ${{ steps.chart.outputs.version }}
+    steps:
+      - id: chart
+        uses: ianoflynnautomation/bjjeire-ci-templates/actions/parse-release-tag@v1
+        with:
+          tag: ${{ inputs.tag }}
+          mapping: |
+            api-v=bjj-eire-api/artifact
+            mongodb-v=bjj-eire-mongodb/artifact
+            web-v=bjj-eire-web/artifact
+            umbrella-v=bjj-eire/artifact
+
   publish:
     name: Publish ${{ inputs.tag }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Parse tag
-        id: chart
-        env:
-          TAG: ${{ inputs.tag }}
-        run: |
-          case "$TAG" in
-            api-v*)
-              NAME=bjj-api;       DIR=bjj-eire-api/artifact;     VERSION="${TAG#api-v}";       UMBRELLA=false ;;
-            mongodb-v*)
-              NAME=bjj-mongodb;   DIR=bjj-eire-mongodb/artifact; VERSION="${TAG#mongodb-v}";   UMBRELLA=false ;;
-            web-v*)
-              NAME=bjj-frontend;  DIR=bjj-eire-web/artifact;     VERSION="${TAG#web-v}";       UMBRELLA=false ;;
-            umbrella-v*)
-              NAME=bjj-eire;      DIR=bjj-eire/artifact;         VERSION="${TAG#umbrella-v}";  UMBRELLA=true  ;;
-            *)
-              echo "::error::Unknown tag prefix: $TAG (expected api-v*/mongodb-v*/web-v*/umbrella-v*)"
-              exit 1 ;;
-          esac
-          {
-            echo "name=$NAME"
-            echo "dir=$DIR"
-            echo "version=$VERSION"
-            echo "umbrella=$UMBRELLA"
-          } >> "$GITHUB_OUTPUT"
-          echo "::notice title=Resolved::chart=$NAME version=$VERSION dir=$DIR umbrella=$UMBRELLA"
-
-      - name: Checkout at tag
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-        with:
-          ref: ${{ inputs.tag }}
-
-      - uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310  # v5.0.1
-        with:
-          version: ${{ env.HELM_VERSION }}
-
-      - name: Login to GHCR
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ACTOR: ${{ github.actor }}
-        run: |
-          echo "::group::helm registry login"
-          printf '%s' "$GH_TOKEN" | helm registry login "$REGISTRY" --username "$ACTOR" --password-stdin
-          echo "::endgroup::"
-
-      - name: Build umbrella dependencies
-        if: steps.chart.outputs.umbrella == 'true'
-        run: |
-          echo "::group::helm dependency build"
-          helm dependency build "${{ steps.chart.outputs.dir }}"
-          echo "::endgroup::"
-
-      - name: Package
-        run: |
-          echo "::group::helm package"
-          helm package "${{ steps.chart.outputs.dir }}" --destination /tmp/charts
-          echo "::endgroup::"
-
-      - name: Push
-        run: |
-          echo "::group::helm push"
-          helm push "/tmp/charts/${{ steps.chart.outputs.name }}-${{ steps.chart.outputs.version }}.tgz" "oci://${REGISTRY}/${OWNER}"
-          echo "::endgroup::"
-
-      - name: Verify pull
-        run: |
-          mkdir -p /tmp/verify
-          helm pull "oci://${REGISTRY}/${OWNER}/${{ steps.chart.outputs.name }}" \
-            --version "${{ steps.chart.outputs.version }}" \
-            --destination /tmp/verify
-          ls -la /tmp/verify/
-          echo "::notice title=Published::oci://${REGISTRY}/${OWNER}/${{ steps.chart.outputs.name }}:${{ steps.chart.outputs.version }}"
-
-      - name: Job summary
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
-        env:
-          CHART_REF: oci://${{ env.REGISTRY }}/${{ env.OWNER }}/${{ steps.chart.outputs.name }}:${{ steps.chart.outputs.version }}
-          TAG: ${{ inputs.tag }}
-        with:
-          script: |
-            await core.summary
-              .addHeading('Helm chart published', 2)
-              .addTable([
-                [{ data: 'Field', header: true }, { data: 'Value', header: true }],
-                ['Tag',   `\`${process.env.TAG}\``],
-                ['Chart', `\`${process.env.CHART_REF}\``],
-              ])
-              .write();
-            core.notice(`Published ${process.env.CHART_REF}`, { title: 'Helm chart' });
+    needs: resolve
+    permissions:
+      contents: read
+      packages: write
+    uses: ianoflynnautomation/bjjeire-ci-templates/.github/workflows/helm-publish-oci.yml@v1
+    with:
+      chart-dir: ${{ needs.resolve.outputs.path }}
+      checkout-ref: ${{ inputs.tag }}
+      expected-version: ${{ needs.resolve.outputs.version }}
+      helm-version: "3.16.4"

@@ -10,82 +10,40 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
-env:
-  HELM_VERSION: "3.16.4"
-
 permissions:
   contents: read
 
 jobs:
-  lint:
-    name: Helm Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+  charts:
+    name: Helm
+    permissions:
+      contents: read
+    uses: ianoflynnautomation/bjjeire-ci-templates/.github/workflows/helm-chart-quality.yml@v1
+    with:
+      helm-version: "3.16.4"
+      chart-paths: "."
+      render-charts: bjj-eire/artifact
+      namespace: bjjeire-app
+      set-values: |
+        bjj-api.api.image.tag=ci
+        bjj-frontend.frontend.image.tag=ci
+        seeder.enabled=false
+      template-args: "--debug"
+      schema-locations: |
+        default
+        https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json
 
-      - name: Install Helm
-        uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310  # v5.0.1
-        with:
-          version: ${{ env.HELM_VERSION }}
-
-      - name: Lint subcharts
-        run: |
-          helm lint bjj-eire-api/artifact
-          helm lint bjj-eire-mongodb/artifact
-          helm lint bjj-eire-web/artifact
-
-      - name: Build umbrella deps & lint
-        run: |
-          helm dependency build bjj-eire/artifact
-          helm lint bjj-eire/artifact
-
-  template:
-    name: Helm Template (dry-run)
-    runs-on: ubuntu-latest
-    needs: lint
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-
-      - name: Install Helm
-        uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310  # v5.0.1
-        with:
-          version: ${{ env.HELM_VERSION }}
-
-      - name: Render umbrella chart
-        run: |
-          helm dependency build bjj-eire/artifact
-          # Password is secretKeyRef at runtime — no value needed to template
-          helm template bjj-eire bjj-eire/artifact \
-            --namespace bjjeire-app \
-            --set bjj-api.api.image.tag=ci \
-            --set bjj-frontend.frontend.image.tag=ci \
-            --set seeder.enabled=false \
-            --debug > /tmp/rendered.yaml
-
-      - name: Install kubeconform
-        run: |
-          curl -sSLo /tmp/kubeconform.tar.gz \
-            https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
-          tar -xzf /tmp/kubeconform.tar.gz -C /usr/local/bin
-
-      - name: Validate rendered manifests
-        run: |
-          kubeconform \
-            -strict \
-            -ignore-missing-schemas \
-            -schema-location default \
-            -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
-            /tmp/rendered.yaml
-
-      - name: Install kube-score
-        run: |
-          curl -sSLo /tmp/kube-score.tar.gz \
-            https://github.com/zegl/kube-score/releases/download/v1.20.0/kube-score_1.20.0_linux_amd64.tar.gz
-          tar -xzf /tmp/kube-score.tar.gz -C /usr/local/bin kube-score
-          chmod +x /usr/local/bin/kube-score
-
-      - name: Score rendered manifests
-        run: |
-          echo "::group::kube-score"
-          kube-score score /tmp/rendered.yaml --output-format ci || true
-          echo "::endgroup::"
+  score:
+    name: Workload review
+    needs: charts
+    permissions:
+      contents: read
+      security-events: write
+    uses: ianoflynnautomation/bjjeire-ci-templates/.github/workflows/kubernetes-policy-scan.yml@v1
+    with:
+      manifests-artifact: ${{ needs.charts.outputs.artifact-name }}
+      kube-score: true
+      kube-score-enforce: false
+      trivy: false
+      polaris: false
+      hadolint: false
