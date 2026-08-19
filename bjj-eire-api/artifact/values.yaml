@@ -1,6 +1,5 @@
 nameOverride: "bjj-api"
 fullnameOverride: "bjj-api"
-namespace: bjjeire-app
 
 api:
   enabled: true

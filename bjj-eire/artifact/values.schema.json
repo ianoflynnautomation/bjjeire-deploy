@@ -8,7 +8,6 @@
       "type": "object",
       "required": ["mongodb"],
       "properties": {
-        "namespace": { "type": "string", "minLength": 1 },
         "mongodb": {
           "type": "object",
           "required": ["enabled", "image", "resources", "persistence"],
@@ -34,7 +33,6 @@
       "type": "object",
       "required": ["api"],
       "properties": {
-        "namespace": { "type": "string", "minLength": 1 },
         "api": {
           "type": "object",
           "required": ["enabled", "image", "service", "resources"],
@@ -45,7 +43,8 @@
             "service": { "$ref": "#/definitions/service" },
             "resources": { "$ref": "#/definitions/resources" },
             "autoscaling": { "$ref": "#/definitions/autoscaling" },
-            "podDisruptionBudget": { "$ref": "#/definitions/pdb" }
+            "podDisruptionBudget": { "$ref": "#/definitions/pdb" },
+            "env": { "$ref": "#/definitions/javaEnv" }
           }
         }
       }
@@ -54,7 +53,6 @@
       "type": "object",
       "required": ["frontend"],
       "properties": {
-        "namespace": { "type": "string", "minLength": 1 },
         "frontend": {
           "type": "object",
           "required": ["enabled", "image", "service", "resources"],
@@ -147,6 +145,16 @@
         "targetCPUUtilizationPercentage": { "type": "integer", "minimum": 1, "maximum": 100 },
         "targetMemoryUtilizationPercentage": { "type": "integer", "minimum": 1, "maximum": 100 }
       }
+    },
+    "javaEnv": {
+      "type": "object",
+      "description": "API process environment. Java / Spring Boot keys only — .NET leftovers are rejected.",
+      "propertyNames": {
+        "not": {
+          "pattern": "^(ASPNETCORE_|CorsOptions|FeatureManagement|ReadOnlyMode|AzureAd__|Donation__)"
+        }
+      },
+      "additionalProperties": { "type": "string" }
     },
     "pdb": {
       "type": "object",

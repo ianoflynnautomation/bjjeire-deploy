@@ -1,0 +1,113 @@
+---
+# Official ephemeral overlay for the bjj-eire umbrella chart.
+# Use with: helm upgrade --install bjj-eire . -n <env> -f values-ephemeral.yaml
+#
+# Dynamic bits (image tags, CORS origin, Entra) stay on the caller
+# (Flux HelmRelease spec.values / valuesFrom, or a generated -f overlay).
+# This file is the source of truth; gitops and tests copies must match it.
+bjj-mongodb:
+  mongodb:
+    persistence:
+      enabled: false
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+  secrets:
+    mongodbRootPassword:
+      enabled: true
+      create: false
+      name: bjj-mongodb-root-password
+      key: mongodb-password
+
+bjj-api:
+  api:
+    image:
+      repository: ghcr.io/ianoflynnautomation/bjjeire-api
+      pullPolicy: IfNotPresent
+    imagePullSecrets:
+      - name: ghcr-pull-secret
+    replicaCount: 1
+    jvmOpts: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0"
+    podAnnotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/path: "/metrics"
+      prometheus.io/port: "8080"
+    env:
+      RATE_LIMIT_ENABLED: "true"
+      RATE_LIMIT_PERMIT_LIMIT: "30"
+      RATE_LIMIT_WINDOW_SECONDS: "10"
+      RATE_LIMIT_REJECTION_STATUS_CODE: "429"
+      READ_ONLY_MODE_ENABLED: "false"
+      FEATURE_BJJ_EVENTS: "true"
+      FEATURE_GYMS: "true"
+      FEATURE_STORES: "true"
+      FEATURE_COMPETITIONS: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://opentelemetry-collector.observability.svc.cluster.local:4318"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    autoscaling:
+      enabled: false
+  secrets:
+    mongodbRootPassword:
+      enabled: true
+      create: false
+      name: bjj-mongodb-root-password
+      key: mongodb-password
+  ingress:
+    enabled: false
+
+bjj-frontend:
+  frontend:
+    image:
+      repository: ghcr.io/ianoflynnautomation/bjjeire-frontend
+      pullPolicy: IfNotPresent
+    imagePullSecrets:
+      - name: ghcr-pull-secret
+    replicaCount: 1
+    podAnnotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/path: "/metrics"
+      prometheus.io/port: "80"
+    env:
+      NODE_ENV: production
+      PORT: "80"
+    resources:
+      limits:
+        cpu: 300m
+        memory: 256Mi
+      requests:
+        cpu: 50m
+        memory: 128Mi
+    autoscaling:
+      enabled: false
+    waitForApi:
+      enabled: true
+  ingress:
+    enabled: false
+
+seeder:
+  enabled: true
+  force: true
+  environment: Development
+  dataset: "test"
+  image:
+    repository: ghcr.io/ianoflynnautomation/bjjeire-seeder
+    pullPolicy: IfNotPresent
+  hookPolicy: "post-install,post-upgrade"
+  mongodb:
+    host: bjj-mongodb
+    port: 27017
+    user: admin
+    database: Mongodb
+    secretName: bjj-mongodb-root-password
+    secretKey: mongodb-password

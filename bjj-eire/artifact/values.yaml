@@ -1,7 +1,6 @@
 bjj-mongodb:
   nameOverride: "bjj-mongodb"
   fullnameOverride: "bjj-mongodb"
-  namespace: bjjeire-app
 
   mongodb:
     enabled: true
@@ -105,7 +104,6 @@ bjj-mongodb:
 bjj-api:
   nameOverride: "bjj-api"
   fullnameOverride: "bjj-api"
-  namespace: bjjeire-app
 
   api:
     enabled: true
@@ -248,7 +246,6 @@ bjj-frontend:
 
   nameOverride: "bjj-frontend"
   fullnameOverride: "bjj-frontend"
-  namespace: bjjeire-app
 
   frontend:
     enabled: true

@@ -1,6 +1,5 @@
 nameOverride: "bjj-frontend"
 fullnameOverride: "bjj-frontend"
-namespace: bjjeire-app
 
 frontend:
   enabled: true

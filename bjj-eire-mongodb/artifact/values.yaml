@@ -1,6 +1,5 @@
 nameOverride: "bjj-mongodb"
 fullnameOverride: "bjj-mongodb"
-namespace: bjjeire-app
 
 mongodb:
   enabled: true
