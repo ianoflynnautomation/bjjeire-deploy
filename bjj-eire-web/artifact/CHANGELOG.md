@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.7](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/web-v0.1.6...web-v0.1.7) (2026-08-20)
+
+
+### ### Features
+
+* ephemeral overlay for the bjj-eire umbrella chart ([765af04](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/765af047c6ae6fd2af5f6a00e1592393c12761b6))
+
 ## [0.1.6](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/web-v0.1.5...web-v0.1.6) (2026-08-13)
 
 
