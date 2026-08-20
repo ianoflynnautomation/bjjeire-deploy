@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.8](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/api-v0.1.7...api-v0.1.8) (2026-08-20)
+
+
+### ### Features
+
+* ephemeral overlay for the bjj-eire umbrella chart ([765af04](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/765af047c6ae6fd2af5f6a00e1592393c12761b6))
+
+
+### ### Bug Fixes
+
+* test auth issue ([9e4440f](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/9e4440f246ae49216da511c85b20f1aa9f443bb8))
+
 ## [0.1.7](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/api-v0.1.6...api-v0.1.7) (2026-08-13)
 
 
