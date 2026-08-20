@@ -153,6 +153,7 @@ bjj-api:
       FEATURE_COMPETITIONS: "true"
       ENTRA_ISSUER_URI: "https://login.microsoftonline.com/REPLACE_WITH_YOUR_TENANT_ID/v2.0"
       ENTRA_AUDIENCE: "api://REPLACE_WITH_YOUR_CLIENT_ID"
+      ENTRA_AUDIENCE_URI: "api://REPLACE_WITH_YOUR_CLIENT_ID"
       DONATION_BITCOIN_ADDRESS: ""
 
     resources:
