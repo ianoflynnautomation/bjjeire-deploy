@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.5](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/umbrella-v0.2.4...umbrella-v0.2.5) (2026-08-27)
+
+
+### ### Bug Fixes
+
+* **ephemeral:** make values-ephemeral the preview source of truth ([#50](https://github.com/ianoflynnautomation/bjjeire-deploy/issues/50)) ([0de0b6c](https://github.com/ianoflynnautomation/bjjeire-deploy/commit/0de0b6c4ba3d987102a6ac13059f88eb22a7cdd5))
+
 ## [0.2.4](https://github.com/ianoflynnautomation/bjjeire-deploy/compare/umbrella-v0.2.3...umbrella-v0.2.4) (2026-08-20)
 
 
