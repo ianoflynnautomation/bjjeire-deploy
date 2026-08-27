@@ -2,9 +2,9 @@
 # Official ephemeral overlay for the bjj-eire umbrella chart.
 # Use with: helm upgrade --install bjj-eire . -n <env> -f values-ephemeral.yaml
 #
-# Dynamic bits (image tags, CORS origin, Entra) stay on the caller
-# (Flux HelmRelease spec.values / valuesFrom, or a generated -f overlay).
-# This file is the source of truth; gitops and tests copies must match it.
+# Dynamic bits (image tags, CORS origin, Entra, waitForApi FQDN) stay on the
+# caller (Flux HelmRelease spec.values / valuesFrom, or a generated -f overlay).
+# This file is the source of truth; gitops copies must match it.
 bjj-mongodb:
   mongodb:
     persistence:
@@ -14,7 +14,7 @@ bjj-mongodb:
         cpu: 500m
         memory: 512Mi
       requests:
-        cpu: 100m
+        cpu: 50m
         memory: 256Mi
   secrets:
     mongodbRootPassword:
@@ -30,7 +30,7 @@ bjj-api:
       pullPolicy: IfNotPresent
     imagePullSecrets:
       - name: ghcr-pull-secret
-    replicaCount: 1
+    replicaCount: 2
     jvmOpts: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0"
     podAnnotations:
       prometheus.io/scrape: "true"
@@ -38,7 +38,7 @@ bjj-api:
       prometheus.io/port: "8080"
     env:
       RATE_LIMIT_ENABLED: "true"
-      RATE_LIMIT_PERMIT_LIMIT: "30"
+      RATE_LIMIT_PERMIT_LIMIT: "500"
       RATE_LIMIT_WINDOW_SECONDS: "10"
       RATE_LIMIT_REJECTION_STATUS_CODE: "429"
       READ_ONLY_MODE_ENABLED: "false"
@@ -53,7 +53,7 @@ bjj-api:
         cpu: 500m
         memory: 512Mi
       requests:
-        cpu: 100m
+        cpu: 50m
         memory: 256Mi
     autoscaling:
       enabled: false
@@ -73,7 +73,16 @@ bjj-frontend:
       pullPolicy: IfNotPresent
     imagePullSecrets:
       - name: ghcr-pull-secret
-    replicaCount: 1
+    replicaCount: 2
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 101
+      fsGroup: 101
+      seccompProfile:
+        type: RuntimeDefault
+      sysctls:
+        - name: net.ipv4.ip_unprivileged_port_start
+          value: "0"
     podAnnotations:
       prometheus.io/scrape: "true"
       prometheus.io/path: "/metrics"
@@ -92,6 +101,7 @@ bjj-frontend:
       enabled: false
     waitForApi:
       enabled: true
+      apiUrl: "http://bjj-api:8080/actuator/health/readiness"
   ingress:
     enabled: false
 
@@ -103,6 +113,8 @@ seeder:
   image:
     repository: ghcr.io/ianoflynnautomation/bjjeire-seeder
     pullPolicy: IfNotPresent
+  imagePullSecrets:
+    - name: ghcr-pull-secret
   hookPolicy: "post-install,post-upgrade"
   mongodb:
     host: bjj-mongodb
