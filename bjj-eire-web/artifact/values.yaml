@@ -106,7 +106,7 @@ frontend:
   waitForApi:
     enabled: true
     apiUrl: "http://bjj-api:8080/actuator/health/readiness"
-    image: curlimages/curl:8.21.0
+    image: curlimages/curl:8.22.0
 
 ingress:
   enabled: true
