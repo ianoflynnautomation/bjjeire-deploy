@@ -1,8 +1,8 @@
 <div align="center">
 
-# BJJ Eire — Helm Deployment
+# BJJ Éire — Helm Charts
 
-**Kubernetes deployment assets for the BJJ Eire platform** — a full-stack Brazilian Jiu-Jitsu community app built on React 19, Java 25 / Spring Boot, and MongoDB, deployed to AKS via Helm.
+**Helm charts for the BJJ Éire platform** — a React 19 SPA, a Java 25 / Spring Boot API, and MongoDB, delivered to AKS by Flux.
 
 [![CI](https://github.com/ianoflynnautomation/bjjeire-deploy/actions/workflows/ci.yml/badge.svg)](https://github.com/ianoflynnautomation/bjjeire-deploy/actions/workflows/ci.yml)
 [![Release](https://github.com/ianoflynnautomation/bjjeire-deploy/actions/workflows/release.yml/badge.svg)](https://github.com/ianoflynnautomation/bjjeire-deploy/actions/workflows/release.yml)
@@ -10,7 +10,7 @@
 [![Helm](https://img.shields.io/badge/Helm-v3.16.4-0f1689?logo=helm)](https://helm.sh)
 [![Java](https://img.shields.io/badge/Java-25-ED8B00?logo=openjdk)](https://openjdk.org)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev)
-[![MongoDB](https://img.shields.io/badge/MongoDB-7.0-47A248?logo=mongodb)](https://www.mongodb.com)
+[![MongoDB](https://img.shields.io/badge/MongoDB-8.2-47A248?logo=mongodb)](https://www.mongodb.com)
 
 </div>
 
@@ -18,189 +18,132 @@
 
 ## Overview
 
-This repository contains all Helm charts and CI/CD workflows to deploy the BJJ Eire platform to Kubernetes (AKS). The umbrella chart `bjj-eire` composes three subcharts:
+This repository **produces chart artifacts; it does not deploy them.** Charts
+are published to GHCR as OCI artifacts, and [Flux](https://fluxcd.io) pulls
+them from [`bjjeire-gitops`](https://github.com/ianoflynnautomation/bjjeire-gitops),
+which owns the values each cluster actually runs.
 
-| Chart | Description |
+![Chart and delivery architecture](docs/diagrams/architecture.drawio.svg)
+
+## Documentation
+
+| | |
 |---|---|
-| `bjj-api` | Java 25 / Spring Boot REST API with Azure AD auth, Prometheus metrics, OpenTelemetry |
-| `bjj-frontend` | React 19 + Nginx single-page app |
-| `bjj-mongodb` | MongoDB 7.0 with persistent storage |
+| **[Architecture](docs/architecture.md)** | Chart composition, delivery chain, which values files are actually used |
+| **[CI/CD](docs/ci-cd.md)** | CI, release-please, chart publishing, Renovate |
+| **[Decisions (ADRs)](docs/adr/)** | Why the umbrella uses `file://` deps, why charts ship as OCI, why the seeder is a hook |
+| **[Runbooks](docs/runbooks/)** | [Release a chart](docs/runbooks/release-a-chart.md) · [MongoDB recovery](docs/runbooks/mongodb-statefulset-recovery.md) · [Local install](docs/runbooks/local-install.md) |
+| **[AGENTS.md](AGENTS.md)** | Conventions and hard rules — for coding agents and new contributors alike |
 
+## Charts
 
----
+Note that **directory names and chart names differ**:
 
-## Repository Structure
+| Directory | Chart | Version | Description |
+|---|---|---|---|
+| `bjj-eire/artifact` | `bjj-eire` | 0.2.3 | Umbrella, plus the seeder hook Job |
+| `bjj-eire-api/artifact` | `bjj-api` | 0.1.7 | Java 25 / Spring Boot REST API |
+| `bjj-eire-web/artifact` | `bjj-frontend` | 0.1.6 | React 19 SPA served by Caddy |
+| `bjj-eire-mongodb/artifact` | `bjj-mongodb` | 0.1.5 | MongoDB 8.2 with persistent storage |
+
+The umbrella depends on its siblings by `file://` path. `charts/` and
+`Chart.lock` are gitignored build output — run `helm dependency build` after
+cloning.
+
+## How a change reaches a cluster
 
 ```
-bjjeire-deploy/
-├── .github/
-│   └── workflows/
-│       ├── ci.yml            # Helm lint + kubeconform validation
-│       ├── helm-deploy.yml   # Manual deploy to dev / prod
-│       └── release.yml       # Release-Please + push charts to GHCR OCI
-├── bjj-eire/artifact/        # Umbrella chart
-│   ├── charts/               # Packaged subcharts (dependency build output)
-│   ├── values.yaml           # Base values
-│   ├── values-local.yaml     # Local cluster overrides
-│   ├── values-dev.yaml       # Dev environment overrides
-│   └── values-prod.yaml      # Production overrides
-├── bjj-eire-api/artifact/    # Standalone API chart
-├── bjj-eire-web/artifact/    # Standalone frontend chart
-├── bjj-eire-mongodb/artifact/ # Standalone MongoDB chart
-└── scripts/deploy.sh         # Manual deploy helper
+1. Merge a conventional commit touching the chart's directory
+2. Merge the release PR  →  tag  →  publish-chart.yml  →  oci://ghcr.io/…:<version>
+3. Bump the OCIRepository tag in bjjeire-gitops  →  Flux reconciles
 ```
 
----
+Publishing a chart does **not** deploy it. Step 3 is required, and for a
+subchart change the umbrella's dependency pin has to be bumped first. Full
+procedure: [docs/runbooks/release-a-chart.md](docs/runbooks/release-a-chart.md).
 
-## Prerequisites
+The OCI tag is the chart version **without the `v`** — git tag
+`umbrella-v0.2.3` publishes `bjj-eire:0.2.3`.
 
-| Tool | Version |
+## Where values live
+
+| File | Consumed by |
 |---|---|
-| kubectl | v1.26+ |
-| Helm | v3.16+ |
-| Docker | 24+ (for local builds) |
-| Kubernetes cluster | AKS or local (minikube / kind) |
+| `values.yaml` | Every render — chart defaults |
+| `values-ephemeral.yaml` | Preview environments, via a copy in `bjjeire-gitops` |
+| `values-local.yaml` | `helm install` on minikube / kind |
+| `values-dev.yaml`, `values-staging.yaml`, `values-prod.yaml` | **Nothing — legacy** |
 
----
+Deployed configuration lives in `bjjeire-gitops`, which supplies `values:`
+inline in its `HelmRelease` and never reads the files here. The dev, staging,
+and prod files are left over from the pre-GitOps era, when this repository
+deployed with a kubeconfig and nginx Ingress — the clusters now run Istio
+ambient with Gateway API. See
+[ADR-0005](docs/adr/0005-environment-values-are-not-the-deployment-source.md).
 
-## Deploying
-
-### Manual deploy via GitHub Actions
-
-1. Go to **Actions → Helm — Deploy to Kubernetes**
-2. Click **Run workflow**
-3. Select `environment` (`dev` or `prod`) and `image_tag` (e.g. `v1.2.3` or `latest`)
-
-### Required GitHub Secrets
-
-| Secret | Description |
-|---|---|
-| `KUBECONFIG_DEV` | base64-encoded kubeconfig for the dev cluster |
-| `KUBECONFIG_PROD` | base64-encoded kubeconfig for the prod cluster |
-| `AZURE_AD_TENANT_ID` | Entra ID tenant GUID |
-| `AZURE_AD_CLIENT_ID` | App registration client GUID |
-| `AZURE_AD_AUDIENCE` | API audience URI (e.g. `api://<client-id>`) |
-| `MONGODB_ROOT_PASSWORD_B64` | Base64-encoded MongoDB root password |
-| `GHCR_PAT` | GitHub PAT with `read:packages` scope (optional, private images) |
-
-Generate the MongoDB secret value:
-
-```bash
-echo -n 'your-password' | base64
-```
-
-### Deploy from the command line
+## Local development
 
 ```bash
 helm dependency build bjj-eire/artifact
 
-helm upgrade --install bjj-eire bjj-eire/artifact \
-  --namespace bjjeire-app \
-  --create-namespace \
-  -f bjj-eire/artifact/values.yaml \
-  -f bjj-eire/artifact/values-dev.yaml \
-  --set bjj-api.api.image.tag=latest \
-  --set bjj-frontend.frontend.image.tag=latest \
-  --set 'bjj-api.api.env.AzureAd__TenantId=<tenant-id>' \
-  --set 'bjj-api.api.env.AzureAd__ClientId=<client-id>' \
-  --set 'bjj-api.api.env.AzureAd__Audience=<audience>' \
-  --set 'bjj-api.secrets.mongodbRootPassword.value=<base64-password>' \
-  --set 'bjj-mongodb.secrets.mongodbRootPassword.value=<base64-password>' \
-  --wait --timeout 5m
-```
-
----
-
-## Local Development
-
-<details>
-<summary>Run on a local Kubernetes cluster (minikube / kind)</summary>
-
-1. Start your local cluster and ensure `kubectl` context is set.
-
-2. Build local images (from the respective app repos):
-
-```bash
-docker build -t bjj-api:local .         # from bjjeire-api repo
-docker build -t bjj-frontend:local .    # from bjjeire-web repo
-```
-
-3. Deploy with local values:
-
-```bash
-helm dependency build bjj-eire/artifact
+MONGO_PW=$(echo -n 'change-me' | base64)
 
 helm upgrade --install bjj-eire bjj-eire/artifact \
-  --namespace bjjeire-app \
-  --create-namespace \
+  --namespace bjjeire-app --create-namespace \
   -f bjj-eire/artifact/values.yaml \
   -f bjj-eire/artifact/values-local.yaml \
-  --set 'bjj-api.secrets.mongodbRootPassword.value=<base64-password>' \
-  --set 'bjj-mongodb.secrets.mongodbRootPassword.value=<base64-password>'
+  --set "bjj-api.secrets.mongodbRootPassword.value=${MONGO_PW}" \
+  --set "bjj-mongodb.secrets.mongodbRootPassword.value=${MONGO_PW}" \
+  --wait --timeout 10m
 ```
 
-4. Add to `/etc/hosts`:
+Add `app.bjj.local` and `api.bjj.local` to `/etc/hosts`. Full walkthrough,
+including building the images: [docs/runbooks/local-install.md](docs/runbooks/local-install.md).
 
-```
-127.0.0.1  app.bjj.local api.bjj.local
-```
+## CI
 
-5. Access the app at `https://app.bjj.local`.
+Every pull request runs `helm lint` across all charts, renders the umbrella,
+validates with `kubeconform` (default schemas plus the datree CRDs catalog),
+and reviews the rendered workloads with `kube-score` (advisory).
 
-</details>
+Details: [docs/ci-cd.md](docs/ci-cd.md).
 
----
+## Releases
 
-## Environments
+[Release-Please](https://github.com/googleapis/release-please) manages four
+independent release lines driven by
+[Conventional Commits](https://www.conventionalcommits.org):
 
-| Environment | Frontend | API |
-|---|---|---|
-| Local | `app.bjj.local` | `api.bjj.local` |
-| Dev | `dev.bjjeire.com` | `api.dev.bjjeire.com` |
-| Prod | `bjjeire.com` | `api.bjjeire.com` |
-
----
-
-## Releases & Versioning
-
-Releases are managed by [Release-Please](https://github.com/googleapis/release-please). On merge to `main`, a release PR is opened automatically based on [Conventional Commits](https://www.conventionalcommits.org). Merging the release PR:
-
-- Bumps chart versions
-- Generates `CHANGELOG.md`
-- Packages and pushes all charts to GHCR OCI (`ghcr.io/ianoflynnautomation`)
-
-Chart image tags:
-
-| Chart | Tag format |
+| Chart | Tag |
 |---|---|
 | Umbrella | `umbrella-v*` |
 | API | `api-v*` |
 | Frontend | `web-v*` |
 | MongoDB | `mongodb-v*` |
 
----
+Merging a release PR bumps the version, writes the changelog, tags, and
+dispatches `publish-chart.yml`. **Never create a release tag by hand** —
+[ADR-0004](docs/adr/0004-one-release-line-per-chart.md) explains what that
+breaks.
 
-## CI
+## Related repositories
 
-Every pull request runs:
-
-- `helm lint` on all subcharts
-- `helm template` dry-run rendering
-- `kubeconform` manifest validation
-
----
+| Repository | Owns |
+|---|---|
+| **bjjeire-deploy** (this repo) | Helm charts and their OCI artifacts |
+| [bjjeire](https://github.com/ianoflynnautomation/bjjeire) | Application code and the container images these charts reference |
+| [bjjeire-gitops](https://github.com/ianoflynnautomation/bjjeire-gitops) | Flux resources; owns the live values and the chart version pin |
+| [bjjeire-terraform-azurerm-aks](https://github.com/ianoflynnautomation/bjjeire-terraform-azurerm-aks) | Cluster, identities, Key Vault |
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). This project follows [Conventional Commits](https://www.conventionalcommits.org) and the [Contributor Covenant](CODE_OF_CONDUCT.md).
-
----
+See [CONTRIBUTING.md](CONTRIBUTING.md). This project follows
+[Conventional Commits](https://www.conventionalcommits.org) and the
+[Contributor Covenant](CODE_OF_CONDUCT.md).
 
 ## Security
 
 See [SECURITY.md](SECURITY.md) for the vulnerability disclosure policy.
-
----
 
 ## License
 
